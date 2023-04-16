@@ -8,6 +8,7 @@ A blog that's probably gonna grow too big for it's boots at some point.
 
 ## The Stack
 | Component  | Choice |
+| ---------- | ------ |
 | Web Server | Axum   |
 | Markdown   | Comrak |
 | Templating | Maud   |
