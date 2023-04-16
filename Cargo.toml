@@ -1,0 +1,19 @@
+[package]
+name = "site"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+axum = {version = "0.6.15", features = ["headers"]}
+comrak = "0.18.0"
+gray_matter = "0.2.6"
+maud = { version = "*", features = ["axum"] }
+rayon = "1.7.0"
+serde = { version = "1.0.160", features = ["derive"] }
+serde_dhall = "0.12.1"
+thiserror = "1.0.40"
+tokio = { version = "1.27.0", features = ["full"] }
+tracing = "0.1.37"
+tracing-subscriber = "0.3.16"
