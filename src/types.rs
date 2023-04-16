@@ -1,11 +1,8 @@
-use std::fmt;
 use std::path::PathBuf;
 
-use axum::response::Html;
 use comrak::{markdown_to_html, ComrakOptions};
 use gray_matter::engine::YAML;
 use gray_matter::Matter;
-use rayon::prelude::*;
 use serde::Deserialize;
 use thiserror::Error;
 use tracing::*;
@@ -99,7 +96,6 @@ impl FrontMatter {
 }
 
 pub struct State {
-    comrak_opts: ComrakOptions,
     pub posts: Vec<Post>,
 }
 
@@ -137,7 +133,6 @@ impl State {
         comrak_opts.extension.front_matter_delimiter = Some("---".to_owned());
         Self {
             posts: State::get_posts(Some(settings.posts_path), &comrak_opts),
-            comrak_opts,
         }
     }
 }

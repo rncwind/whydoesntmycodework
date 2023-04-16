@@ -2,10 +2,9 @@
 title: Building a Blog
 slug: howitsmade
 started: 2023-04-16
+published: 9999-12-31
 tags: [rust, axum, blog-meta]
 ---
-
-# How The Sausage is made
 
 I read a _lot_ of technical blogs. I love reading about how people make
 interesting, and often complex software.
@@ -14,9 +13,9 @@ Two of my favorite blogs are from [Xe Iaso](https://xeiaso.net/) and
 [Amos/Fasterthanlime](https://fasterthanli.me/), and their articles on how they
 made their blogs were what made me realise how interesting the project would be.
 
-# The Stack
+## The Stack
 
-## Language
+### Language
 
 I really like Rust. In fact I'm lucky enough to be employed writing rust (in a
 job that doesn't involve crypto currency! a true rarity), as such i'm pretty
@@ -30,7 +29,7 @@ Whilst I doubt any post I make will ever require huge throughput capabilities,
 the fact that Rust was designed to make concurrency easy makes it a very
 attractive platform for web applications, especially when it's main contender is Go.
 
-## Web Application Frameworks
+### Web Application Frameworks
 
 I have a good amount of experience using
 Hyper, and previously used [Actix](https://actix.rs/) at university for a project.
@@ -51,7 +50,7 @@ middleware, which makes it surprisingly composable.
 Axum is also one of the few Rust WAFs that I've seen _not_ use macros for it's
 routing, instead opting for relativley plain structs.
 
-## Templating
+### Templating
 
 Rust has a fair few templating libraries. I previously used [Ructe](https://github.com/kaj/ructe), which is a
 compiled templating language for Rust. It's _really_ fast, it compiles your
@@ -155,23 +154,23 @@ pub fn page(title: String, params: Vec<String>) -> Markup {
 Oh, and because it's a macro, just like with Ructe the templates get compiled to
 native code so still run _stupidly_ fast.
 
-## Parsing
+### Parsing
 
 
-## Config
+### Config
 
 Dhall is based
 
-## Build system
+### Build system
 
 I fell for the reproducability ambush and now i'm cursed to use NixOS. Well,
 it's less of a curse more of a monkey's paw.
 
-# Design Decisions
+## Design Decisions
 
 Moral Linked List.
 
-# But why do this?
+## But why do this?
 
 I wanted to learn! I love messing about with new tools I've not touched before.
 I initially was planning on using a SSG like Jekyl or Hugo, but decided doing it
@@ -181,11 +180,17 @@ In doing this, I got to mess about with a load of tools i've not used before,
 Axum, Maud, Comrak and Dhall were all new to me before this and I've learned a
 load about them.
 
-# The Future
+## The Future
 
 Right now, all of this prose was written in Markdown. Whilst I don't _mind_
 markdown, and everyone seems to use it, it's not my prefered "fancy plain text"
 format.
 
 In the future, I'm planning on converting the blog to run off of
-(org-mode)[https://orgmode.org/] files.
+[https://orgmode.org/](org-mode) files.
+
+## Music I listened to writing this post
+
+I hope for this to become a recurring feature with all my blog posts.
+- [https://www.youtube.com/watch?v=f3isaRfr9aY](Transgender Dysphoria Blues)
+- [https://www.youtube.com/watch?v=aaY3spCDdpY](Northen Exposure)

@@ -1,39 +1,31 @@
-use crate::types::State;
-use axum::{extract::Path, http::StatusCode, response::IntoResponse, routing::get, Extension};
-use maud::{html, Markup};
+use crate::types::{Post, State};
+use axum::{extract::Path, http::StatusCode, Extension};
+use maud::{html, Markup, DOCTYPE};
 use std::sync::Arc;
 
-pub async fn list_posts(Extension(state): Extension<Arc<State>>) -> Markup {
+fn post_header(post: &Post) -> Markup {
     html! {
-        // List of all blog posts.
-        ul {
-            @for post in &state.posts {
-                li {
-                    a href = ({format!("/post/{}", post.frontmatter.slug)}) {(post.frontmatter.title)}
-                }
-            }
-        }
+        (DOCTYPE)
+        meta charset="utf-8";
+        title{ (post.frontmatter.title) }
     }
 }
 
-pub async fn blogpost(
-    Path(slug): Path<String>,
-    Extension(state): Extension<Arc<State>>,
-) -> (StatusCode, Markup) {
-    for post in &state.posts {
-        if post.frontmatter.slug == slug {
-            return (
-                StatusCode::OK,
-                html! (
-                    h3 { ({format!("Time to read: {}m", post.readtime)}) }
-                    (maud::PreEscaped(post.rendered.clone()))
-                ),
-            );
+fn post_banner(post: &Post) -> Markup {
+    html! {
+        ul class="navigation" {
+            li class = "nav-element"{  }
         }
+        br{}
+        h1 class="title" { (post.frontmatter.title) }
+        h3 class="time-to-read" { ({format!("Time to read: {}m", post.readtime)}) }
     }
-    handle_404().await
 }
 
-pub async fn handle_404() -> (StatusCode, Markup) {
-    (StatusCode::NOT_FOUND, html! {h1{"Move Along"}})
+pub async fn render_blogpost(post: &Post) -> Markup {
+    html! {
+        (post_header(post))
+        (post_banner(post))
+        (maud::PreEscaped(post.rendered.clone()))
+    }
 }
