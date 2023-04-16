@@ -47,6 +47,7 @@ pub enum PostParseError {
 pub struct Post {
     pub frontmatter: FrontMatter,
     pub rendered: String,
+    pub readtime: u64,
 }
 
 #[derive(Deserialize)]
@@ -60,9 +61,20 @@ impl Post {
     fn new(content: String, co: &ComrakOptions) -> Result<Post, PostParseError> {
         let frontmatter = FrontMatter::new(&content)?;
         let rendered = markdown_to_html(&content, co);
+        let readtime = estimated_read_time::text(
+            &content,
+            &estimated_read_time::Options::new()
+                .technical_document(true)
+                .technical_difficulty(2)
+                .build()
+                .unwrap_or_default(),
+        )
+        .seconds()
+            / 60;
         Ok(Post {
             frontmatter,
             rendered,
+            readtime,
         })
     }
 }

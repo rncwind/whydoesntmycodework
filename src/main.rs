@@ -1,3 +1,4 @@
+mod tmpl;
 mod types;
 
 use std::fmt;
@@ -40,38 +41,14 @@ async fn main() {
     info!("Creating router");
 
     let app = Router::new()
-        .route("/", get(list_posts))
-        .route("/post/:slug", get(view_post))
-        // .route("/path/:user_id", get(path))
-        .layer(Extension(state));
+        .route("/", get(tmpl::list_posts))
+        .route("/post/:slug", get(tmpl::blogpost))
+        .layer(Extension(state))
+        .fallback(tmpl::handle_404);
 
     info!("Serving!");
     axum::Server::bind(&host.host_string().parse().unwrap())
         .serve(app.into_make_service())
         .await
         .unwrap();
-}
-
-async fn view_post(
-    Path(slug): Path<String>,
-    Extension(state): Extension<Arc<State>>,
-) -> maud::Markup {
-    for post in &state.posts {
-        if post.frontmatter.slug == slug {
-            return html!((maud::PreEscaped(post.rendered.clone())));
-        }
-    }
-    html!(h1{"404 lol"})
-}
-
-async fn list_posts(Extension(state): Extension<Arc<State>>) -> Markup {
-    html! {
-        ul {
-            @for post in &state.posts {
-                li {
-                    a href = ({format!("/post/{}", post.frontmatter.slug)}) {(post.frontmatter.title)}
-                }
-            }
-        }
-    }
 }

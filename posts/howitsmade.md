@@ -53,7 +53,107 @@ routing, instead opting for relativley plain structs.
 
 ## Templating
 
-Maud.
+Rust has a fair few templating libraries. I previously used [Ructe](https://github.com/kaj/ructe), which is a
+compiled templating language for Rust. It's _really_ fast, it compiles your
+templates into native code and serves them out of memory. This is awesome,
+however, the templating language itself leaves a lot to be desired.
+
+All of your template has to be annotated with types, which is just a bit gross,
+and the templates end up looking like a lovecraftian mix of rust and html, as an
+example.
+
+```html
+@(params: &[(&str, usize)], title: &str)
+<!doctype html>
+    <head>
+        <title> @title </title>
+        <meta charset="UTF-8">
+    <head>
+    <body>
+        <h1> @title </h1>
+        <ul>
+        @for p in params {
+            <li> @p </li>
+        }
+        </ul>
+    </body>
+</html>
+```
+
+Also annoyingly, it means we're leaving the nice and cozy rust editing context,
+and entering my less cozy, more pointy-angle-bracket filled world of ``.html``
+files, it's also somewhat brittle and not particularly composable.
+
+It's rather well known that rust has pretty good support for macros. After
+reading around and looking at some other rust-based blogs, I stumbled upon
+[Maud](https://maud.lambda.xyz/).
+
+Maud is a ~~My little pony joke~~ HTML template engine for rust, that is
+implemented as a procedural macro. This means that it embeds a templating DSL
+that maps to HTML within rust itself!
+
+This is great, because it means that rust-analyzer works with it, and our
+templates are "just normal rust functions" that return some ``Markup`` type.
+
+The same template can be implemented in maud as
+
+```rust
+use maud::{DOCTYPE, html, Markup}
+pub async fn head(title: String) -> Markup {
+    html! {
+        (DOCTYPE)
+        meta charset="utf-8";
+        title { (title) }
+        h1 { (title) }
+        ul {
+            @for p in params {
+                li { (p) }
+            }
+        }
+    }
+}
+```
+
+Maud also eschews "partials" like in other templating languages, and favours
+function composition, letting us re-write the above in a much nicer way!
+
+```rust
+use maud::{DOCTYPE, html, Markup}
+pub async fn head(title: String) -> Markup {
+    html! {
+        (DOCTYPE)
+        meta charset="utf-8";
+        title { (title) }
+    }
+}
+
+pub async fn body(params: Vec<String>) -> Markup {
+    html! {
+        ul {
+            @for p in params {
+                li { (p) }
+            }
+        }
+    }
+}
+
+pub fn page(title: String, params: Vec<String>) -> Markup {
+    html!{
+        // Add the header
+        (header(title))
+        
+        // append a <h1> </h1> with the title
+        h1 { (title) }
+        
+        // Add the body
+        (body(params))
+    }
+}
+
+```
+
+Oh, and because it's a macro, just like with Ructe the templates get compiled to
+native code so still run _stupidly_ fast.
 
 ## Parsing
 
@@ -64,11 +164,22 @@ Dhall is based
 
 ## Build system
 
-Nix curse
+I fell for the reproducability ambush and now i'm cursed to use NixOS. Well,
+it's less of a curse more of a monkey's paw.
 
 # Design Decisions
 
 Moral Linked List.
+
+# But why do this?
+
+I wanted to learn! I love messing about with new tools I've not touched before.
+I initially was planning on using a SSG like Jekyl or Hugo, but decided doing it
+this way would be a lot more fun!
+
+In doing this, I got to mess about with a load of tools i've not used before,
+Axum, Maud, Comrak and Dhall were all new to me before this and I've learned a
+load about them.
 
 # The Future
 

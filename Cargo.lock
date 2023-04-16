@@ -546,6 +546,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "estimated_read_time"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "649cfd341410b1f8906e8ca1b39e5534be9312fda9182edd770cec34dfbce8d7"
+
+[[package]]
 name = "fancy-regex"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1727,6 +1733,7 @@ version = "0.1.0"
 dependencies = [
  "axum",
  "comrak",
+ "estimated_read_time",
  "gray_matter",
  "maud",
  "rayon",
