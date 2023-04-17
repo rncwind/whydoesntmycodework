@@ -2,47 +2,50 @@ use crate::types::{Post, State};
 use maud::{html, Markup, DOCTYPE};
 use std::sync::Arc;
 
-fn navbar() -> Markup {
+// Eventually everything reaches this. This is our base template.
+// We keep everything nice and consistent by puting all our CSS and
+// stuff into here.
+fn base(title: Option<&str>, content: Markup) -> Markup {
     html! {
-        ul class = "navigation" {
-            li class = "nav-element" {
-                a href = ("/") {"Home"}
+        (DOCTYPE)
+        html lang = "en" {
+            head {
+                meta charset="utf-8";
+                title {
+                    @if let Some(title) = title {
+                        (title) " - Why Doesnt My Code Work?"
+                    } @else {
+                        "Why Doesnt My Code Work?"
+                    }
+                }
             }
-            li class = "nav-element" {
-                a href = ("/blog") {"Blog"}
-            }
+            (navbar())
+            (content)
         }
     }
 }
 
-fn standard_header() -> Markup {
+fn navbar() -> Markup {
     html! {
-        (DOCTYPE)
-        meta charset="utf-8";
-    }
-}
-
-fn post_html_header(post: &Post) -> Markup {
-    html! {
-        (standard_header())
-        title{ (post.frontmatter.title) }
-    }
-}
-
-fn post_banner(post: &Post) -> Markup {
-    html! {
-        (navbar())
-        h1 class="title" { (post.frontmatter.title) }
-        h3 class="time-to-read" { ({format!("Time to read: {}m", post.readtime)}) }
+        nav {
+            a href = ("/") {"Home"}
+            {"|"}
+            a href = ("/blog") {"Blog"}
+        }
     }
 }
 
 pub async fn render_blogpost(post: &Post) -> Markup {
-    html! {
-        (post_html_header(post))
-        (post_banner(post))
-        (maud::PreEscaped(post.rendered.clone()))
-    }
+    let content = html! {
+        div class="blogpost-banner" {
+            h1 class="title" { (post.frontmatter.title) }
+            small class="time-to-read" { ({format!("Time to read: {}m", post.readtime)}) }
+        }
+        div class="blogpost-body" {
+            (maud::PreEscaped(post.rendered.clone()))
+        }
+    };
+    base(Some(&post.frontmatter.title), content)
 }
 
 pub async fn render_postlist(state: Arc<State>) -> Markup {
@@ -59,9 +62,9 @@ pub async fn render_postlist(state: Arc<State>) -> Markup {
 }
 
 pub async fn render_home() -> Markup {
-    html! {
-        (navbar())
+    let content = html! {
         p{"Ain’t Nobody Here But Us Chickens"}
         img src="https://web.archive.org/web/20091027035606im_/http://es.geocities.com/melgarbeatles6/barraconstruction.gif" alt="Geocities Under Construction Gif";
-    }
+    };
+    base(None, content)
 }
