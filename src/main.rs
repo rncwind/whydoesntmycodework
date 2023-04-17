@@ -13,6 +13,7 @@ use axum::{
     BoxError, Extension, Router,
 };
 use axum_server::tls_rustls::RustlsConfig;
+use tower_http::services::ServeDir;
 use tracing::*;
 use types::*;
 
@@ -46,11 +47,15 @@ async fn main() {
     info!("Spawning HTTP redirector");
     tokio::spawn(redirect_http_to_https(host.ports, host.ip_addr));
 
+    info!("Setting up static file service");
+    let staticfiles = ServeDir::new("static");
+
     info!("Creating router");
     let app = Router::new()
         .route("/", get(handlers::home))
         .route("/blog", get(handlers::list_posts))
         .route("/post/:slug", get(handlers::blogpost))
+        .nest_service("/static", staticfiles)
         .layer(Extension(state))
         .fallback(handlers::handle_404);
 

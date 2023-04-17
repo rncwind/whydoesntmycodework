@@ -11,6 +11,7 @@ fn base(title: Option<&str>, content: Markup) -> Markup {
         html lang = "en" {
             head {
                 meta charset="utf-8";
+                link rel="stylesheet" href={"/static/css/debugdance.css"};
                 title {
                     @if let Some(title) = title {
                         (title) " - Why Doesnt My Code Work?"

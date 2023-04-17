@@ -15,20 +15,41 @@
         pkgs = (import nixpkgs) {
           inherit system overlays;
         };
+        src = ./.;
 
         naersk' = pkgs.callPackage naersk { };
+        version = "0.1";
 
       in
       rec {
-        # For `nix build` & `nix run`:
-        defaultPackage = naersk'.buildPackage {
-          nativeBuildInputs = with pkgs; [
-            pkg-config
-          ];
-          buildInputs = with pkgs; [
-            openssl
-          ];
-          src = ./.;
+        packages = rec {
+          # For `nix build` & `nix run`:
+          bin = naersk'.buildPackage {
+            pname = "whydoesntmycodework-bin";
+            root = src;
+            buildInputs = with pkgs; [
+              pkg-config
+              openssl
+            ];
+          };
+
+          static = pkgs.stdenv.mkDerivation {
+            pname = "whydoesntmycodework-static";
+            inherit (bin) version;
+            inherit src;
+
+            phases = "installPhase";
+
+            installPhase = ''
+              mkdir $out
+              cp -r $src/static $out
+            '';
+          };
+
+          default = pkgs.symlinkJoin {
+            name = "whydoesntmycodework-${bin.version}";
+            paths = [ static bin ];
+          };
         };
 
         # For `nix develop`:
