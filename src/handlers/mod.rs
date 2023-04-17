@@ -1,19 +1,11 @@
-use crate::tmpl::render_blogpost;
-use crate::types::{Post, State};
+use crate::tmpl::{render_blogpost, render_home, render_postlist};
+use crate::types::State;
 use axum::{extract::Path, http::StatusCode, Extension};
-use maud::{html, Markup, DOCTYPE};
+use maud::{html, Markup};
 use std::sync::Arc;
 
 pub async fn list_posts(Extension(state): Extension<Arc<State>>) -> Markup {
-    html! {
-        ul class="post-list" {
-            @for post in &state.posts {
-                li class = "post-link" {
-                    a href = ({format!("/post/{}", post.frontmatter.slug)}) {(post.frontmatter.title)}
-                }
-            }
-        }
-    }
+    render_postlist(state).await
 }
 
 pub async fn blogpost(
@@ -26,6 +18,10 @@ pub async fn blogpost(
         }
     }
     handle_404().await
+}
+
+pub async fn home() -> Markup {
+    render_home().await
 }
 
 pub async fn handle_404() -> (StatusCode, Markup) {

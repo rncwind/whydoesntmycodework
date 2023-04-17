@@ -20,16 +20,23 @@ impl Default for SiteSettings {
     }
 }
 
+#[derive(Deserialize, Debug, Clone, Copy)]
+pub struct Ports {
+    pub http: u32,
+    pub https: u32,
+}
+
 #[derive(Deserialize, Debug)]
 pub struct HostSettings {
     pub hostname: String,
     pub ip_addr: std::net::IpAddr,
-    pub port: u32,
+    pub ports: Ports,
+    pub cert_path: PathBuf,
 }
 
 impl HostSettings {
     pub fn host_string(&self) -> String {
-        format!("{}:{}", self.ip_addr, self.port)
+        format!("{}:{}", self.ip_addr, self.ports.https)
     }
 }
 
