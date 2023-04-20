@@ -1,6 +1,9 @@
+use std::cmp::Ordering;
 use std::path::PathBuf;
 
-use comrak::{markdown_to_html, ComrakOptions};
+use chrono::Utc;
+use comrak::plugins::syntect::SyntectAdapter;
+use comrak::{markdown_to_html, markdown_to_html_with_plugins, ComrakOptions, ComrakPlugins};
 use gray_matter::engine::YAML;
 use gray_matter::Matter;
 use serde::Deserialize;
@@ -46,25 +49,40 @@ pub enum PostParseError {
     FrontmatterError,
     #[error("There is no front matter!")]
     NoFrontmatter,
+    #[error("Only found one ---, yaml is probably unterminated!")]
+    UnterminatedFrontmatter,
 }
 
+#[derive(PartialEq)]
 pub struct Post {
     pub frontmatter: FrontMatter,
     pub rendered: String,
     pub readtime: u64,
 }
 
-#[derive(Deserialize)]
+impl PartialOrd for Post {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.frontmatter.published.cmp(&other.frontmatter.published))
+    }
+}
+
+#[derive(Deserialize, PartialEq)]
 pub struct FrontMatter {
     pub title: String,
     pub slug: String,
-    pub date: Option<String>,
+    pub started: chrono::NaiveDate,
+    pub published: chrono::NaiveDate,
 }
 
 impl Post {
-    fn new(content: String, co: &ComrakOptions) -> Result<Post, PostParseError> {
+    fn new(
+        content: String,
+        co: &ComrakOptions,
+        cplug: &ComrakPlugins,
+    ) -> Result<Post, PostParseError> {
         let frontmatter = FrontMatter::new(&content)?;
-        let rendered = markdown_to_html(&content, co);
+        //let rendered = markdown_to_html(&content, co);
+        let rendered = markdown_to_html_with_plugins(&content, co, cplug);
         let readtime = estimated_read_time::text(
             &content,
             &estimated_read_time::Options::new()
@@ -85,18 +103,22 @@ impl Post {
 
 impl FrontMatter {
     fn new(content: &str) -> Result<FrontMatter, PostParseError> {
-        let matter = Matter::<YAML>::new();
-        let result = matter.parse(content);
-        let fm = match result.data {
-            Some(fm) => fm,
-            None => return Err(PostParseError::NoFrontmatter),
-        };
-        //result.data.unwrap().deserialize().unwrap()
-        match fm.deserialize() {
-            Ok(x) => Ok(x),
-            Err(y) => {
-                warn!("{:?}", y);
-                Err(PostParseError::FrontmatterError)
+        let matches: Vec<_> = content.match_indices("---").collect();
+        if matches.is_empty() {
+            Err(PostParseError::NoFrontmatter)
+        } else if matches.len() == 1 {
+            Err(PostParseError::UnterminatedFrontmatter)
+        } else {
+            let start = (matches[0].0) + 3; // Skip over the first 3 ---
+            let end = matches[1].0;
+            let slice = &content[start..end].to_string();
+            info!("{}", slice);
+            match serde_yaml::from_str(slice) {
+                Ok(x) => Ok(x),
+                Err(e) => {
+                    error!("{}", e);
+                    Err(PostParseError::FrontmatterError)
+                }
             }
         }
     }
@@ -107,7 +129,11 @@ pub struct State {
 }
 
 impl State {
-    fn get_posts(post_dir: Option<PathBuf>, comrak_opts: &ComrakOptions) -> Vec<Post> {
+    fn get_posts(
+        post_dir: Option<PathBuf>,
+        comrak_opts: &ComrakOptions,
+        comrak_plugins: &ComrakPlugins,
+    ) -> Vec<Post> {
         let mut v: Vec<Post> = Vec::new();
         let p: PathBuf = post_dir.unwrap_or("./posts/".parse().unwrap());
         let post_paths = std::fs::read_dir(p).unwrap();
@@ -122,8 +148,9 @@ impl State {
 
             // Now we have a valid file path that we can read the markdown from.
             let filename = String::from(validpath.file_stem().unwrap().to_str().unwrap());
+            println!("{:?}", validpath);
             let content = std::fs::read_to_string(validpath).unwrap();
-            let post = Post::new(content, comrak_opts);
+            let post = Post::new(content, comrak_opts, comrak_plugins);
             match post {
                 Ok(post) => v.push(post),
                 Err(e) => {
@@ -136,10 +163,13 @@ impl State {
     }
 
     pub fn new(settings: SiteSettings) -> Self {
+        let adapter = SyntectAdapter::new("base16-eighties.dark");
         let mut comrak_opts = ComrakOptions::default();
         comrak_opts.extension.front_matter_delimiter = Some("---".to_owned());
-        Self {
-            posts: State::get_posts(Some(settings.posts_path), &comrak_opts),
-        }
+        let mut comrak_plugins = ComrakPlugins::default();
+        comrak_plugins.render.codefence_syntax_highlighter = Some(&adapter);
+        let mut posts = State::get_posts(Some(settings.posts_path), &comrak_opts, &comrak_plugins);
+        posts.sort_by(|a, b| b.frontmatter.published.cmp(&a.frontmatter.published));
+        Self { posts }
     }
 }

@@ -1,8 +1,8 @@
 ---
 title: Debug Post
 slug: debugpost
-started: 2023-04-16
-published: 9999-12-31
+started: 1970-01-01
+published: 1970-01-01
 tags: [debug, meta]
 ---
 # A totally real not at all debug post

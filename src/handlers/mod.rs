@@ -1,4 +1,4 @@
-use crate::tmpl::{render_blogpost, render_home, render_postlist};
+use crate::tmpl::{render_about, render_blogpost, render_home, render_postlist};
 use crate::types::State;
 use axum::{extract::Path, http::StatusCode, Extension};
 use maud::{html, Markup};
@@ -26,4 +26,8 @@ pub async fn home() -> Markup {
 
 pub async fn handle_404() -> (StatusCode, Markup) {
     (StatusCode::NOT_FOUND, html! {h1{"Move Along"}})
+}
+
+pub async fn about() -> Markup {
+    render_about().await
 }

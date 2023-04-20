@@ -54,6 +54,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(handlers::home))
         .route("/blog", get(handlers::list_posts))
+        .route("/about", get(handlers::about))
         .route("/post/:slug", get(handlers::blogpost))
         .nest_service("/static", staticfiles)
         .layer(Extension(state))

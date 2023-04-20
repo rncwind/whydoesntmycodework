@@ -1,6 +1,6 @@
 ---
 title: Building a Blog
-slug: howitsmade
+slug: buildingablog
 started: 2023-04-16
 published: 9999-12-31
 tags: [rust, axum, blog-meta]
@@ -11,15 +11,15 @@ interesting, and often complex software.
 
 Two of my favorite blogs are from [Xe Iaso](https://xeiaso.net/) and
 [Amos/Fasterthanlime](https://fasterthanli.me/), and their articles on how they
-made their blogs were what made me realise how interesting the project would be.
+made their blogs were what made me realize how interesting the project would be.
 
 ## The Stack
 
 ### Language
 
-I really like Rust. In fact I'm lucky enough to be employed writing rust (in a
-job that doesn't involve crypto currency! a true rarity), as such i'm pretty
-well aquainted with it's ecosystem. 
+I really like Rust. In fact, I'm lucky enough to be employed writing rust (in a
+job that doesn't involve crypto currency! a true rarity), as such I'm pretty well
+ acquainted with its ecosystem.
 
 I have my critiques of the language (HKTs when?) but for my preferences it sits
 in a very happy position, giving me good performance whilst also having a
@@ -27,28 +27,25 @@ rigorous ML Inspired type system.
 
 Whilst I doubt any post I make will ever require huge throughput capabilities,
 the fact that Rust was designed to make concurrency easy makes it a very
-attractive platform for web applications, especially when it's main contender is Go.
+attractive platform for web applications, especially when its main contender is Go.
 
 ### Web Application Frameworks
 
-I have a good amount of experience using
-Hyper, and previously used [Actix](https://actix.rs/) at university for a project.
+I have a good amount of experience using Hyper, and previously used [Actix](https://actix.rs/) at university for a project.
 
 I had issues with Actix, namely the _really bad_ compile times, I'm unsure if 
 this was resolved at a later point, but it soured my opinion of the framework.
 
-I have in the past made little toys using Warp and Rocket, but each of them have
-their own issues.
-Warp encodes all routes into types, whilst a really cool idea, the issue is it
+I have in the past made little toys using Warp and Rocket, but each of them has its issues.
+Warp encodes all routes into types, whilst a really cool idea, it
 makes compile times really bad, and also gives you **HUGE** error messages.
-Rocket on the other hand, looked promising, but also seems to mostly be
-maintained by a single person at this point, which does not instil confendence.
+Rocket, on the other hand, looked promising but also seems to mostly be
+maintained by a single person at this point, which does not instill confidence.
 
 As a result, I have opted to use Axum for this project. Axum is pretty neat, in
 that it was designed to make heavy use of the ``tower`` ecosystem for its
 middleware, which makes it surprisingly composable.
-Axum is also one of the few Rust WAFs that I've seen _not_ use macros for it's
-routing, instead opting for relativley plain structs.
+Axum is also one of the few Rust WAFs that I've seen _not_ use macros for its routing, instead opting for relatively plain structs.
 
 ### Templating
 
@@ -57,8 +54,8 @@ compiled templating language for Rust. It's _really_ fast, it compiles your
 templates into native code and serves them out of memory. This is awesome,
 however, the templating language itself leaves a lot to be desired.
 
-All of your template has to be annotated with types, which is just a bit gross,
-and the templates end up looking like a lovecraftian mix of rust and html, as an
+All of your templates have to be annotated with types, which is just a bit gross,
+and the templates end up looking like a lovecraftian mix of Rust and HTML, as an
 example.
 
 ```html
@@ -80,19 +77,19 @@ example.
 ```
 
 Also annoyingly, it means we're leaving the nice and cozy rust editing context,
-and entering my less cozy, more pointy-angle-bracket filled world of ``.html``
+and entering my less cozy, more pointy-angle-bracket-filled world of ``.html``
 files, it's also somewhat brittle and not particularly composable.
 
-It's rather well known that rust has pretty good support for macros. After
+It's rather well-known that Rust has pretty good support for macros. After
 reading around and looking at some other rust-based blogs, I stumbled upon
 [Maud](https://maud.lambda.xyz/).
 
-Maud is a ~~My little pony joke~~ HTML template engine for rust, that is
+Maud is a ~~My little pony joke~~ HTML template engine for Rust, that is
 implemented as a procedural macro. This means that it embeds a templating DSL
 that maps to HTML within rust itself!
 
-This is great, because it means that rust-analyzer works with it, and our
-templates are "just normal rust functions" that return some ``Markup`` type.
+This is great because it means that rust-analyzer works with it, and our
+templates are "just normal rust functions" that return some `Markup``` type.
 
 The same template can be implemented in maud as
 
@@ -156,6 +153,80 @@ native code so still run _stupidly_ fast.
 
 ### Parsing
 
+I don't want to be writing my prose as HTML. Thankfully markdown is a very well-supported
+format these days (I blame Reddit), and there's a very nice and ergonomic
+parser library in the form of Comrak.
+
+Comrak is a _fantastic_ library, it was able to parse any markdown I threw at
+it, from tables, to code blocks and even skip over the YAML frontmatter that my
+posts start with!
+
+The latter part was especially important, this document starts with a big block
+of YAML which contains various metadata about this blogpost. As a concrete
+example, this was the yaml at the time of writing.
+
+```yaml
+title: Building a Blog
+slug: buildingablog
+started: 2023-04-16
+published: 9999-12-31
+tags: [rust, axum, blog-meta]
+```
+
+As you can see, the blog title (at the top of the page), the slug (what the
+route for this specific post is), when I started writing it, when it's set to be
+published, and finally, what tags this post has.
+
+Some of this has little use at the time of writing (The distinction between started/published
+doesn't matter, and the tags are not displayed), but it leaves me room for
+further development which is nice.
+
+On the subject of YAML, by choosing rust for this project I get to use the
+wonderful ``serde`` crate for Serializing and Deserializing data. ``serde`` is
+heavyweight, but it is incredibly powerful. 95% of the time you throw a
+``#[derive(Deserialize)]`` annotation on a structure, and serde will create the
+deserializer automagically, now it's up to you to just give the
+what-you're-deserializing-from function a string containing your metadata.
+
+
+Unfortunately,
+as mentioned earlier, the YAML is frontmatter. That means it's _in band
+signalling_. To get around this, all of the yaml is "fenced" at the start of the
+file with a ``---``. The code that extracts this is a rather ugly, but it's
+replicated here in case you're interested.
+
+
+```rust
+fn new(content: &str) -> Result<FrontMatter, PostParseError> {
+    let matches: Vec<_> = content.match_indices("---").collect();
+    if matches.is_empty() {
+        Err(PostParseError::NoFrontmatter)
+    } else if matches.len() == 1 {
+        Err(PostParseError::UnterminatedFrontmatter)
+    } else {
+        let start = (matches[0].0) + 3; // Skip over the first 3 ---
+        let end = matches[1].0;
+        let slice = &content[start..end].to_string();
+        info!("{}", slice);
+        match serde_yaml::from_str(slice) {
+            Ok(x) => Ok(x),
+            Err(e) => {
+                error!("{}", e);
+                Err(PostParseError::FrontmatterError)
+            }
+        }
+    }
+}
+```
+
+
+There are probably better ways to solve this problem, but I wrote this code at
+11PM and Just Wanted It Done ™️. The one downside of this, is that it will
+_always_ use the first two sets of ``---``, but that's unlikely as by convention
+the first thing in any of these markdown documents is the yaml frontmatter.
+
+Honestly this whole section exists as a test case for this horrible parsing
+code, so thank you dear reader for participating.
 
 ### Config
 
@@ -163,12 +234,46 @@ Dhall is based
 
 ### Build system
 
-I fell for the reproducability ambush and now i'm cursed to use NixOS. Well,
-it's less of a curse more of a monkey's paw.
+I fell for the reproducibility ambush and now I'm cursed to use NixOS. Well,
+it's less of a curse and more of a monkey's paw.
 
 ## Design Decisions
 
+### Software Design
+
 Moral Linked List.
+
+### Web Design
+
+At my day job, I'm a backend engineer, and any front-end devs in the
+are probably laughing at how obvious that statement is given the design here.
+
+I'm not a web developer. My HTML and CSS knowledge is mostly limited to
+what I picked up throughout a CS Degree. This means I know enough to
+know I know nothing.
+
+As such, this website uses minimal HTML and CSS, and all dynamic parts of the site
+(as of writing this) are done server-side and templated out. I know that
+server-side rendering is somewhat passé in the era of Angular/React/Vue etc, and
+at some point, I endeavor to learn them, but for something "simple" like this
+blog, it seemed rather overkill.
+
+With all that said then, it should come as no surprise to most readers that over
+the course of writing this whole project, I learned quite a bit of "modern" and
+"new" (to me at least) CSS and HTML tricks!
+
+A list of New To Me web stuff.
+
+- The ``<nav>`` Element
+- CSS Variables
+- CSS Selectors like ``last-child``
+
+
+Oh, and lest I forget, the colours of this site are based on the fantastic
+[Horizon](https://horizontheme.netlify.app/) colourscheme. I use a [modified
+version](https://github.com/aodhneine/horizon-theme.el) of this theme in [Doom
+Emacs](https://github.com/doomemacs/doomemacs) which is the Text Editor I wrote
+all of this in!
 
 ## But why do this?
 
@@ -176,21 +281,32 @@ I wanted to learn! I love messing about with new tools I've not touched before.
 I initially was planning on using a SSG like Jekyl or Hugo, but decided doing it
 this way would be a lot more fun!
 
-In doing this, I got to mess about with a load of tools i've not used before,
-Axum, Maud, Comrak and Dhall were all new to me before this and I've learned a
-load about them.
+In doing this, I got to mess about with a load of tools I've not used before,
+Axum, Maud, Comrak and Dhall were all new to me before this and I've learned a lot about them.
 
 ## The Future
 
 Right now, all of this prose was written in Markdown. Whilst I don't _mind_
-markdown, and everyone seems to use it, it's not my prefered "fancy plain text"
-format.
+markdown, and everyone seems to use it, it's not my preferred "fancy plain text"
+format. As such, I'm planning on converting the blog to run off of
+[org-mode](https://orgmode.org/) files.
 
-In the future, I'm planning on converting the blog to run off of
-[https://orgmode.org/](org-mode) files.
+There are no parsers for org-mode that are as good as Comrak is for markdown,
+and so undertaking this will be a challenge, especially as org-mode files, like
+the editor they were designed for, are a far larger specification to implement
+than Markdown.
 
-## Music I listened to writing this post
+As such, if I do decide to undertake this, it will probably become a blog series!
 
-I hope for this to become a recurring feature with all my blog posts.
-- [https://www.youtube.com/watch?v=f3isaRfr9aY](Transgender Dysphoria Blues)
-- [https://www.youtube.com/watch?v=aaY3spCDdpY](Northen Exposure)
+Another thing I'd like to implement at some point is Socratic Dialogue. I
+really enjoy it as a style of writing, especially for explanatory and exploratory writing.
+
+Implementing this will probably be somewhat complex, as there is no support for
+it in markdown or org-mode by default. As such, I will probably end up writing
+an Extension for Comrak, or baking it into my homebrew org-mode parser.
+
+## Music I listened to while writing this post
+
+I hope for this to become a recurring feature in all my blog posts.
+- [Transgender Dysphoria Blues](https://www.youtube.com/watch?v=f3isaRfr9aY)
+- [Northen Exposure](https://www.youtube.com/watch?v=aaY3spCDdpY)

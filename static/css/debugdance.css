@@ -1,5 +1,95 @@
+:root {
+    --bg: #1C1E26;
+    --fg: #b2b2c2;
+    --black: #2E303E;
+    --red: #E95678;
+    --ry-one: #EF7682;
+    --ry-two: #F4978B;
+    --yellow: #FAB795;
+    --green: #29D398;
+    --blue: #26BBD9;
+    --magenta: #EE64AE;
+    --magenta-alt: #CA93BA;
+    --cyan: #59E3E3;
+    --white: #FDF0ED;
+}
+
 body {
     font-size: 1rem;
     line-height: 1.75rem;
     word-wrap: break-word;
+    margin: 5% auto;
+    max-width: 70%;
+    background-color: var(--bg);
+    color: var(--fg);
+    font-family: 'Fira Sans', sans-serif;
+    font-weight: 500;
+}
+
+code {
+    font-family: 'Fira Code', monospace;
+}
+
+.post-link {
+    font-family: "Fira Code", monospace;
+}
+
+.date {
+    color: var(--white);
+}
+
+a {
+    border-bottom-width: 2px;
+    border-bottom-style: solid;
+    text-decoration: none;
+}
+
+a:link {
+    color: var(--magenta);
+}
+
+a:visited {
+    color: var(--magenta-alt);
+}
+
+a:hover {
+    color: var(--white);
+    background-color: var(--red);
+}
+
+h1 {
+    color: var(--red);
+    font-weight: 900;
+    margin-bottom: 5%;
+    font-family: "fira-code", monospace;
+}
+
+h2 {
+    color: var(--ry-one);
+    font-weight: 800;
+    margin-bottom: 2.5%;
+    font-family: "fira-code", monospace;
+}
+
+h3 {
+    color: var(--ry-two);
+    font-weight: 700;
+    margin-bottom: 1.5%;
+    font-family: "fira-code", monospace;
+}
+
+
+pre {
+    border-radius: 1%;
+    padding: 1% 1%;
+    overflow: scroll;
+}
+
+ul {
+    list-style-type: '- ';
+}
+
+nav {
+    margin-bottom: 5%;
+    font-weight: 600;
 }
