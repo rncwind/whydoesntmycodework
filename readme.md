@@ -18,3 +18,4 @@ A blog that's probably gonna grow too big for it's boots at some point.
 My codebase does not exist in a vaccum. The codebase is influced by prior art.
 - [Xe Iaso](https://xeiaso.net/)
 - [Amos/fasterthanlime](https://fasterthanli.me/)
+- [Faultlore](https://faultlore.com/blah/)
