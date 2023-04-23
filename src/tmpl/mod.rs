@@ -58,7 +58,7 @@ pub async fn render_postlist(state: Arc<State>) -> Markup {
         ul class="post-list" {
             @for post in &state.posts {
                 li class = "post-link" {
-                    span class="date" { {(post.frontmatter.published.format("Y%Y M%m D%d"))} " - " }
+                    span class="date" { {(post.frontmatter.published.format("Y%Y M%m D%d"))} " -- " }
                     a href = ({format!("/post/{}", post.frontmatter.slug)}) {(post.frontmatter.title)}
                 }
             }

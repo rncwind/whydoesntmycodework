@@ -4,8 +4,6 @@ use std::path::PathBuf;
 use chrono::Utc;
 use comrak::plugins::syntect::SyntectAdapter;
 use comrak::{markdown_to_html, markdown_to_html_with_plugins, ComrakOptions, ComrakPlugins};
-use gray_matter::engine::YAML;
-use gray_matter::Matter;
 use serde::Deserialize;
 use thiserror::Error;
 use tracing::*;
@@ -53,25 +51,11 @@ pub enum PostParseError {
     UnterminatedFrontmatter,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub struct Post {
     pub frontmatter: FrontMatter,
     pub rendered: String,
     pub readtime: u64,
-}
-
-impl PartialOrd for Post {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.frontmatter.published.cmp(&other.frontmatter.published))
-    }
-}
-
-#[derive(Deserialize, PartialEq)]
-pub struct FrontMatter {
-    pub title: String,
-    pub slug: String,
-    pub started: chrono::NaiveDate,
-    pub published: chrono::NaiveDate,
 }
 
 impl Post {
@@ -99,6 +83,25 @@ impl Post {
             readtime,
         })
     }
+
+    fn get_tags(self) -> Vec<String> {
+        self.frontmatter.tags
+    }
+}
+
+impl PartialOrd for Post {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.frontmatter.published.cmp(&other.frontmatter.published))
+    }
+}
+
+#[derive(Deserialize, PartialEq, Clone)]
+pub struct FrontMatter {
+    pub title: String,
+    pub slug: String,
+    pub started: chrono::NaiveDate,
+    pub published: chrono::NaiveDate,
+    pub tags: Vec<String>,
 }
 
 impl FrontMatter {
@@ -171,5 +174,14 @@ impl State {
         let mut posts = State::get_posts(Some(settings.posts_path), &comrak_opts, &comrak_plugins);
         posts.sort_by(|a, b| b.frontmatter.published.cmp(&a.frontmatter.published));
         Self { posts }
+    }
+
+    fn get_posts_with_tag(self, tag: String) -> (String, String) {
+        let ps: Vec<Post> = self
+            .posts
+            .into_iter()
+            .filter(|p| p.clone().get_tags().contains(&tag))
+            .collect();
+        todo!()
     }
 }

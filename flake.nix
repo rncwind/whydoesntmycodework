@@ -59,6 +59,10 @@
             pkg-config
             openssl
 
+            # Profiling
+            linuxPackages_latest.perf
+
+
             rust-bin.stable.latest.default
             rust-analyzer
             dhall

@@ -9,9 +9,9 @@ tags: [rust, axum, blog-meta]
 I read a _lot_ of technical blogs. I love reading about how people make
 interesting, and often complex software.
 
-Two of my favorite blogs are from [Xe Iaso](https://xeiaso.net/) and
+Two of my favourite blogs are from [Xe Iaso](https://xeiaso.net/) and
 [Amos/Fasterthanlime](https://fasterthanli.me/), and their articles on how they
-made their blogs were what made me realize how interesting the project would be.
+made their blogs were what made me realise how interesting the project would be.
 
 ## The Stack
 
@@ -230,18 +230,83 @@ code, so thank you dear reader for participating.
 
 ### Config
 
-Dhall is based
+I've used a lot of configuration languages in the past, ranging from the
+venerable ``.ini``, to json-as-config (please do not do this) and even emacs
+lisp. For this project, I wanted to try out a configuration language that I'd
+read a lot about, but never used. That language is
+[Dhall](https://dhall-lang.org).
+
+Dhall has many features that make it attractive, it's programmable but
+explicitly _not_ Turing complete (That is, it is
+[Total](https://en.wikipedia.org/wiki/Total_functional_programming)), it's
+strongly typed, and makes use of Semantic Hashing to ensure that refactors are
+behaviour preserving.
+
+All of this makes it easy to ensure that configuration related outages are much
+more difficult, providing a similar "if it compiles it works" guarantee to
+Haskell or Rust.
+
+All of this is powered by the
+[serde_dhall](https://crates.io/crates/serde_dhall) crate which allows us to
+directly serialise or deserialise our config files to rust structs, without a
+go-between in the form of yaml or json.
 
 ### Build system
 
 I fell for the reproducibility ambush and now I'm cursed to use NixOS. Well,
 it's less of a curse and more of a monkey's paw.
 
+For those of you not in the know, Nix is a pure functional, declarative package
+manager and build system. By using Nix and Nix Flakes you can create a rather
+easy to use (in the dwarf fort kind of way) hermetic build system.
+
+A deep dive into Nix is beyond the scope of this article, but is something I
+intend to write in the near future.
+
+As a result of using Nix, I chose to use Naersk as the build system for this
+project. Naersk is a rust build system for Nix. It's simple to use, providing a
+sane default flake that Just Builds Stuff ™️. It is slightly more limited than
+other rust builders available for nix (such as Crane) in that it does not
+support cross-compilation. This is not an issue for this use-case as the binary
+will be running on x86_64.
+
+Naersk works well, the current build script is rather simple, compiling the rust
+binary, and using ``symlinkJoin`` to link in the static content (CSS) to create
+a final Derivation.
+
+This was my first experience using Naersk in anger, and it was an enjoyable
+experience. It was simple to use, and very easy to compose into a larger
+derivation.
+
 ## Design Decisions
 
 ### Software Design
 
-Moral Linked List.
+In order to keep the codebase somewhat simple, all posts are stored in a vec and
+iterated until the passed in slug is matched. This means that morally, all posts
+are stored in a linked list.
+
+Some of you might have just recoiled in horror, but this was an intentional
+design decision. The load characterestics of a blog are somewhat unique in that
+a vast amount of traffic is directed at the most recent post. This means that if
+we optimze for this case, we can keep the code for loading a page _very_ simple
+whilst also being very performant in most cases!
+
+Speaking of storing posts, all posts are read once at startup, and stored
+in-memory, this also improves our performance characteristics drastically as we
+only parse once, and serve the parsed result out of memory. Combined with our
+templates being native code, we are 🚀 blazing fast 🚀. However, this does come
+at a slight cost. When I have a new post, I need to restart the application.
+
+This shouldn't really be an issue, as the downtime will resolve itself quite
+quickly, but this is the price we pay for performance.
+
+Eventually, I intend to set up gitops to auto-deploy, which should make this all
+a much easier experience. But for now, as a proof of concept it works well.
+
+Out of interest, I profiled the memory usage by using ``heaptrack``. Serving the
+homepage, the post list, and then this post resulted in a peak memory usage of
+1.1MiB, which is pretty good all things considered.
 
 ### Web Design
 
@@ -255,7 +320,7 @@ know I know nothing.
 As such, this website uses minimal HTML and CSS, and all dynamic parts of the site
 (as of writing this) are done server-side and templated out. I know that
 server-side rendering is somewhat passé in the era of Angular/React/Vue etc, and
-at some point, I endeavor to learn them, but for something "simple" like this
+at some point, I endeavour to learn them, but for something "simple" like this
 blog, it seemed rather overkill.
 
 With all that said then, it should come as no surprise to most readers that over
@@ -277,12 +342,15 @@ all of this in!
 
 ## But why do this?
 
-I wanted to learn! I love messing about with new tools I've not touched before.
-I initially was planning on using a SSG like Jekyl or Hugo, but decided doing it
-this way would be a lot more fun!
+It's funny, one of the first questions I got asked when i mentioned to some of
+my friends that I was building my own blog was "why not just use a SSG".
 
-In doing this, I got to mess about with a load of tools I've not used before,
-Axum, Maud, Comrak and Dhall were all new to me before this and I've learned a lot about them.
+The answer Is that firstly, I wanted to learn. I love messing with new tools
+that I've not used before, and this was a great opportunity to do that, and
+secondly, I'd already tried a few SSGs but didn't really like any of them.
+
+I'm glad I chose this path, since it's resulted in me using a lot of tools that
+otherwise would have passed me by.
 
 ## The Future
 
@@ -305,8 +373,16 @@ Implementing this will probably be somewhat complex, as there is no support for
 it in markdown or org-mode by default. As such, I will probably end up writing
 an Extension for Comrak, or baking it into my homebrew org-mode parser.
 
-## Music I listened to while writing this post
+## While Writing This
 
 I hope for this to become a recurring feature in all my blog posts.
+
+### Music 
+
 - [Transgender Dysphoria Blues](https://www.youtube.com/watch?v=f3isaRfr9aY)
 - [Northen Exposure](https://www.youtube.com/watch?v=aaY3spCDdpY)
+
+### Coffee 
+
+Pink by [Kofra](https://www.kofra.co.uk/coffee). Clever Dripper filter. 20
+clicks on Commandante C40 MK4.
