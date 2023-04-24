@@ -15,7 +15,7 @@ A blog that's probably gonna grow too big for it's boots at some point.
 | Build      | Nix + Naersk |
 
 ## Prior Art
-My codebase does not exist in a vaccum. The codebase is influced by prior art.
+My codebase does not exist in a vacuum. The codebase is influced by prior art.
 - [Xe Iaso](https://xeiaso.net/)
 - [Amos/fasterthanlime](https://fasterthanli.me/)
 - [Faultlore](https://faultlore.com/blah/)
