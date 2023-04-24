@@ -1,3 +1,4 @@
+mod domainsocket;
 mod handlers;
 mod tmpl;
 mod types;
@@ -13,9 +14,12 @@ use axum::{
     BoxError, Extension, Router,
 };
 use axum_server::tls_rustls::RustlsConfig;
+use tokio::net::UnixListener;
 use tower_http::services::ServeDir;
 use tracing::*;
 use types::*;
+
+use crate::domainsocket::ServerAccept;
 
 #[tokio::main]
 async fn main() {
@@ -29,14 +33,14 @@ async fn main() {
         host.host_string()
     );
 
-    info!("Creating rustls config");
-    info!("Reading certs from {:?}", host.cert_path);
-    let config = RustlsConfig::from_pem_file(
-        host.cert_path.join("cert.pem"),
-        host.cert_path.join("key.pem"),
-    )
-    .await
-    .unwrap();
+    // info!("Creating rustls config");
+    // info!("Reading certs from {:?}", host.cert_path);
+    // let config = RustlsConfig::from_pem_file(
+    //     host.cert_path.join("cert.pem"),
+    //     host.cert_path.join("key.pem"),
+    // )
+    // .await
+    // .unwrap();
 
     info!("Getting site settings");
     let ss = SiteSettings::default();
@@ -60,12 +64,39 @@ async fn main() {
         .layer(Extension(state))
         .fallback(handlers::handle_404);
 
-    info!("Serving!");
-    let addr: SocketAddr = host.host_string().parse().unwrap();
-    axum_server::bind_rustls(addr, config)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    match std::env::var("SOCKET_PATH") {
+        // Production will use this. We bind on a unix socket and then proxy it
+        // with Nginx for ease of ACME on Nix.
+        Ok(p) => {
+            info!("Found a socket on SOCKET_PATH: {:?}", p);
+            // Clean up leftovers from previous runs
+            let _ = std::fs::remove_file(&p);
+            // Bind to our unix socket.
+            info!("Binding to unix socket");
+            let unixsock = UnixListener::bind(&p).unwrap();
+            // And serve the server.
+            info!("Serving!");
+            axum::Server::builder(ServerAccept { uds: unixsock })
+                .serve(app.into_make_service_with_connect_info::<domainsocket::UdsConnectInfo>())
+                .await
+                .unwrap();
+        }
+        Err(e) => {
+            // Dev case!
+            warn!("Couldn't get a unix socket, trying to serve normally. Are we on dev?");
+            warn!("Error was: {}", e);
+            let addr: SocketAddr = host.host_string().parse().unwrap();
+            axum::Server::bind(&addr)
+                .serve(app.into_make_service())
+                .await
+                .unwrap()
+        }
+    }
+    // let addr: SocketAddr = host.host_string().parse().unwrap();
+    // axum_server::bind_rustls(addr, config)
+    //     .serve(app.into_make_service())
+    //     .await
+    //     .unwrap();
 }
 
 async fn redirect_http_to_https(ports: Ports, ip: std::net::IpAddr) {

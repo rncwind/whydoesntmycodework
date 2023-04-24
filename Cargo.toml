@@ -11,12 +11,15 @@ axum-server = { version = "0.4.7", features = ["tls-rustls"] }
 chrono = { version = "0.4.24", features = ["serde"] }
 comrak = "0.18.0"
 estimated_read_time = "1.0.0"
+futures = "0.3.28"
+hyper = "0.14.26"
 maud = { version = "*", features = ["axum"] }
 serde = { version = "1.0.160", features = ["derive"] }
 serde_dhall = "0.12.1"
 serde_yaml = "0.9.21"
 thiserror = "1.0.40"
 tokio = { version = "1.27.0", features = ["full"] }
+tower = "0.4.13"
 tower-http = { version = "0.4.0", features = ["fs"] }
 tracing = "0.1.37"
 tracing-subscriber = "0.3.16"
