@@ -3,6 +3,8 @@ mod handlers;
 mod tmpl;
 mod types;
 
+use rand::{distributions::Alphanumeric, Rng};
+use std::fs::File;
 use std::{net::SocketAddr, sync::Arc};
 
 use axum::{
@@ -10,10 +12,10 @@ use axum::{
     handler::HandlerWithoutStateExt,
     http::{StatusCode, Uri},
     response::Redirect,
-    routing::get,
+    routing::{get, post},
     BoxError, Extension, Router,
 };
-use axum_server::tls_rustls::RustlsConfig;
+use std::io::Write;
 use tokio::net::UnixListener;
 use tower_http::services::ServeDir;
 use tracing::*;
@@ -33,20 +35,27 @@ async fn main() {
         host.host_string()
     );
 
-    // info!("Creating rustls config");
-    // info!("Reading certs from {:?}", host.cert_path);
-    // let config = RustlsConfig::from_pem_file(
-    //     host.cert_path.join("cert.pem"),
-    //     host.cert_path.join("key.pem"),
-    // )
-    // .await
-    // .unwrap();
-
     info!("Getting site settings");
     let ss = SiteSettings::default();
 
+    info!("Generating new admin token");
+    let admin_token: String = rand::thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(16)
+        .map(char::from)
+        .collect();
+    info!("Admin key is {}", admin_token);
+    let mut dir = std::env::temp_dir();
+    dir.push("admin_token");
+    let mut admintokenfile = File::create(dir).expect("Couldn't make admin token file");
+    //let admintokenfile = admintokenfile.into_file();
+    info!("Admin key written to {:?}", admintokenfile);
+    admintokenfile
+        .write_all(admin_token.as_bytes())
+        .expect("Couldn't write admin token to file");
+
     info!("Init state");
-    let state: Arc<State> = Arc::new(State::new(ss));
+    let state: Arc<State> = Arc::new(State::new(ss, admin_token));
 
     info!("Spawning HTTP redirector");
     tokio::spawn(redirect_http_to_https(host.ports, host.ip_addr));
@@ -60,6 +69,7 @@ async fn main() {
         .route("/blog", get(handlers::list_posts))
         .route("/about", get(handlers::about))
         .route("/post/:slug", get(handlers::blogpost))
+        .route("/api/admin/reload", post(handlers::reload_posts))
         .nest_service("/static", staticfiles)
         .layer(Extension(state))
         .fallback(handlers::handle_404);
@@ -92,11 +102,6 @@ async fn main() {
                 .unwrap()
         }
     }
-    // let addr: SocketAddr = host.host_string().parse().unwrap();
-    // axum_server::bind_rustls(addr, config)
-    //     .serve(app.into_make_service())
-    //     .await
-    //     .unwrap();
 }
 
 async fn redirect_http_to_https(ports: Ports, ip: std::net::IpAddr) {

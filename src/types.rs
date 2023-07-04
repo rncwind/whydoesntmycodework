@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 use std::path::PathBuf;
+use tokio::sync::RwLock;
 
 use chrono::Utc;
 use comrak::plugins::syntect::SyntectAdapter;
@@ -128,7 +129,9 @@ impl FrontMatter {
 }
 
 pub struct State {
-    pub posts: Vec<Post>,
+    pub posts: RwLock<Vec<Post>>,
+    pub admin_token: String,
+    posts_path: PathBuf,
 }
 
 impl State {
@@ -165,23 +168,34 @@ impl State {
         v
     }
 
-    pub fn new(settings: SiteSettings) -> Self {
+    pub fn new(settings: SiteSettings, admin_token: String) -> Self {
         let adapter = SyntectAdapter::new("base16-eighties.dark");
         let mut comrak_opts = ComrakOptions::default();
         comrak_opts.extension.front_matter_delimiter = Some("---".to_owned());
         let mut comrak_plugins = ComrakPlugins::default();
         comrak_plugins.render.codefence_syntax_highlighter = Some(&adapter);
-        let mut posts = State::get_posts(Some(settings.posts_path), &comrak_opts, &comrak_plugins);
+        let mut posts = State::get_posts(
+            Some(settings.posts_path.clone()),
+            &comrak_opts,
+            &comrak_plugins,
+        );
         posts.sort_by(|a, b| b.frontmatter.published.cmp(&a.frontmatter.published));
-        Self { posts }
+        Self {
+            posts: RwLock::new(posts),
+            posts_path: settings.posts_path,
+            admin_token,
+        }
     }
 
-    fn get_posts_with_tag(self, tag: String) -> (String, String) {
-        let ps: Vec<Post> = self
-            .posts
-            .into_iter()
-            .filter(|p| p.clone().get_tags().contains(&tag))
-            .collect();
-        todo!()
+    pub fn generate_posts(&self) -> Vec<Post> {
+        let adapter = SyntectAdapter::new("base16-eighties.dark");
+        let mut comrak_opts = ComrakOptions::default();
+        comrak_opts.extension.front_matter_delimiter = Some("---".to_owned());
+        let mut comrak_plugins = ComrakPlugins::default();
+        comrak_plugins.render.codefence_syntax_highlighter = Some(&adapter);
+        let mut posts =
+            State::get_posts(Some(self.posts_path.clone()), &comrak_opts, &comrak_plugins);
+        posts.sort_by(|a, b| b.frontmatter.published.cmp(&a.frontmatter.published));
+        posts
     }
 }

@@ -64,6 +64,7 @@
 
 
             rust-bin.stable.latest.default
+            cargo-flamegraph
             rust-analyzer
             dhall
             dhall-json

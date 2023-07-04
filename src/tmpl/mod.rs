@@ -39,12 +39,23 @@ fn navbar() -> Markup {
     }
 }
 
-pub async fn render_blogpost(post: &Post) -> Markup {
-    let content = html! {
+fn blogpost_banner(post: &Post) -> Markup {
+    html! {
         div class="blogpost-banner" {
             h1 class="title" { (post.frontmatter.title) }
+            div class="taglist" {
+                @for tag in post.frontmatter.tags.iter() {
+                    (format!("#{} ", tag))
+                }
+            }
             small class="time-to-read" { ({format!("Time to read: {}m", post.readtime)}) }
         }
+    }
+}
+
+pub async fn render_blogpost(post: &Post) -> Markup {
+    let content = html! {
+        (blogpost_banner(post))
         div class="blogpost-body" {
             (maud::PreEscaped(post.rendered.clone()))
         }
@@ -56,7 +67,7 @@ pub async fn render_postlist(state: Arc<State>) -> Markup {
     let content = html! {
         h1{"All Posts"}
         ul class="post-list" {
-            @for post in &state.posts {
+            @for post in state.posts.read().await.iter() {
                 li class = "post-link" {
                     span class="date" { {(post.frontmatter.published.format("Y%Y M%m D%d"))} " -- " }
                     a href = ({format!("/post/{}", post.frontmatter.slug)}) {(post.frontmatter.title)}
@@ -86,7 +97,7 @@ pub async fn render_about() -> Markup {
         h2{"Skills"}
         ul {
             li{"Rust, Nix, Haskell and Other languages."}
-            li{"Docker, Linux, k8s"}
+            li{"Docker, Linux, k8s, gRPC, MQTT"}
             li{"Machine Learning, Data Science, Programming Language Theory"}
         }
 
@@ -102,6 +113,7 @@ pub async fn render_about() -> Markup {
         ul {
             li{"I'm a Forever DM. Right now I play a lot of Pathfinder 2e"}
             li{"I like shooting arrows out of bows"}
+            li{"I Know too much about rhythm games."}
             li{"Outspokenly Autistic and Proudly Trans."}
         }
     };
