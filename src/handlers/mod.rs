@@ -4,16 +4,12 @@ use axum::Json;
 use axum::{extract::Path, http::StatusCode, Extension};
 use maud::{html, Markup};
 use serde::Deserialize;
-use serde_json::Value;
-use std::path::PathBuf;
 use std::sync::Arc;
 
 #[derive(Deserialize)]
 pub struct AdminToken {
     admin_token: String,
 }
-
-static reload_secret: Option<&str> = option_env!("RELOAD_SECRET");
 
 pub async fn list_posts(Extension(state): Extension<Arc<State>>) -> Markup {
     render_postlist(state).await

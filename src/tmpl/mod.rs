@@ -68,9 +68,16 @@ pub async fn render_postlist(state: Arc<State>) -> Markup {
         h1{"All Posts"}
         ul class="post-list" {
             @for post in state.posts.read().await.iter() {
-                li class = "post-link" {
-                    span class="date" { {(post.frontmatter.published.format("Y%Y M%m D%d"))} " -- " }
-                    a href = ({format!("/post/{}", post.frontmatter.slug)}) {(post.frontmatter.title)}
+                @if post.frontmatter.published <= chrono::Utc::now().date_naive() {
+                    li class = "post-link" {
+                        span class="date" { {(post.frontmatter.published.format("Y%Y M%m D%d"))} " -- " }
+                        a href = ({format!("/post/{}", post.frontmatter.slug)}) {(post.frontmatter.title)}
+                    }
+                } @else if std::env::var("SITE_DEBUG").is_ok() {
+                    li class = "post-link" {
+                        span class="date" { "UNPUBLISHED -- " }
+                        a href = ({format!("/post/{}", post.frontmatter.slug)}) {(post.frontmatter.title)}
+                    }
                 }
             }
         }

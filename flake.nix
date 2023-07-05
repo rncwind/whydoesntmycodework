@@ -62,7 +62,7 @@
             # Profiling
             linuxPackages_latest.perf
 
-
+            # Stuff we actually want.
             rust-bin.stable.latest.default
             cargo-flamegraph
             rust-analyzer

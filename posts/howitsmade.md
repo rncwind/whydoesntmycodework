@@ -2,7 +2,7 @@
 title: Building a Blog
 slug: buildingablog
 started: 2023-04-16
-published: 9999-12-31
+published: 2023-07-05
 tags: [rust, axum, blog-meta]
 ---
 
@@ -35,6 +35,8 @@ I have a good amount of experience using Hyper, and previously used [Actix](http
 
 I had issues with Actix, namely the _really bad_ compile times, I'm unsure if 
 this was resolved at a later point, but it soured my opinion of the framework.
+Along with this, it also makes heavy usage of the Actor model, which I do not
+enjoy for web frameworks.
 
 I have in the past made little toys using Warp and Rocket, but each of them has its issues.
 Warp encodes all routes into types, whilst a really cool idea, it
@@ -381,6 +383,11 @@ an Extension for Comrak, or baking it into my homebrew org-mode parser.
 
 I'm also a Habitual RSS user (In 2023? I know!), and as such I would like to
 implement RSS support.
+
+It would also be good to actually collect some metrics (Just simple ones like
+how many times each post has been read etc), nothing GDPR worthy.
+
+If you want to keep track of progress, the repository of this site is available [here](https://github.com/rncwind/whydoesntmycodework)
 
 ## While Writing This
 

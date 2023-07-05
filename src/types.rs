@@ -2,9 +2,8 @@ use std::cmp::Ordering;
 use std::path::PathBuf;
 use tokio::sync::RwLock;
 
-use chrono::Utc;
 use comrak::plugins::syntect::SyntectAdapter;
-use comrak::{markdown_to_html, markdown_to_html_with_plugins, ComrakOptions, ComrakPlugins};
+use comrak::{markdown_to_html_with_plugins, ComrakOptions, ComrakPlugins};
 use serde::Deserialize;
 use thiserror::Error;
 use tracing::*;
@@ -83,10 +82,6 @@ impl Post {
             rendered,
             readtime,
         })
-    }
-
-    fn get_tags(self) -> Vec<String> {
-        self.frontmatter.tags
     }
 }
 
