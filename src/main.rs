@@ -5,6 +5,7 @@ mod types;
 
 use rand::{distributions::Alphanumeric, Rng};
 use std::fs::File;
+use std::os::unix::fs::PermissionsExt;
 use std::{net::SocketAddr, sync::Arc};
 
 use axum::{
@@ -94,6 +95,9 @@ async fn main() {
             // Bind to our unix socket.
             info!("Binding to unix socket");
             let unixsock = UnixListener::bind(&p).unwrap();
+            let file = File::open(p).unwrap();
+            let mut permissions = file.metadata().unwrap().permissions();
+            permissions.set_mode(0o777);
             // And serve the server.
             info!("Serving!");
             axum::Server::builder(ServerAccept { uds: unixsock })
