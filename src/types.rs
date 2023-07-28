@@ -32,7 +32,6 @@ pub struct HostSettings {
     pub hostname: String,
     pub ip_addr: std::net::IpAddr,
     pub ports: Ports,
-    pub cert_path: PathBuf,
 }
 
 impl HostSettings {
