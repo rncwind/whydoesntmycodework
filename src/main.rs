@@ -95,9 +95,8 @@ async fn main() {
             // Bind to our unix socket.
             info!("Binding to unix socket");
             let unixsock = UnixListener::bind(&p).unwrap();
-            let file = File::open(p).unwrap();
-            let mut permissions = file.metadata().unwrap().permissions();
-            permissions.set_mode(0o777);
+            let perm = std::fs::Permissions::from_mode(0o777);
+            std::fs::set_permissions(p, perm).unwrap();
             // And serve the server.
             info!("Serving!");
             axum::Server::builder(ServerAccept { uds: unixsock })
