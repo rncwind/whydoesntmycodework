@@ -98,7 +98,7 @@ impl Post {
     <title>{}</title>
     <published>{}</published>
     <updated>{}</updated>
-    <content type=\"html\" xml:base=\"{}\"><!CDATA[{}]> </content>
+    <content type=\"html\" xml:base=\"{}\"><![CDATA[{}]]> </content>
     <link href=\"{}\" rel=\"alternate\" />
 </entry>",
             self.get_full_url(),
@@ -234,8 +234,7 @@ impl State {
 
     pub async fn generate_atom_feed(&self) -> String {
         //let rss_entries: Vec<String> = Vec::new();
-        let atom_header = "
-<?xml version='1.0' encoding='UTF-8'?>
+        let atom_header = "<?xml version='1.0' encoding='UTF-8'?>
 <feed xmlns=\"http://www.w3.org/2005/Atom\">
     <id>https://whydoesntmycode.work/blog.atom</id>
     <title>Why Doesn't My Code Work?</title>
@@ -244,8 +243,7 @@ impl State {
         <email>rncwnd@whydoesntmycode.work</email>
     </author>
     <link href=\"https://whydoesntmycode.work/blog.atom\" rel=\"self\" />
-    <generator uri=\"https://whydoesntmycode.work\" version=\"3.0.0\">whydoesntmycode.work</generator>
-";
+    <generator uri=\"https://whydoesntmycode.work\" version=\"3.0.0\">whydoesntmycode.work</generator>";
         let mut feed = format!("{}", atom_header);
         let rss_entries: Vec<String> = self
             .posts
