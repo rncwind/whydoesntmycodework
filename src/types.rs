@@ -244,7 +244,7 @@ impl State {
         <email>rncwnd@whydoesntmycode.work</email>
     </author>
     <link href=\"https://whydoesntmycode.work/blog.atom\" rel=\"self\" />
-    <generator https://whydoesntmycode.work version=\"3.0.0\"/>
+    <generator uri=\"https://whydoesntmycode.work\" version=\"3.0.0\">whydoesntmycode.work</generator>
 ";
         let mut feed = format!("{}", atom_header);
         let rss_entries: Vec<String> = self
