@@ -39,6 +39,10 @@ pub async fn about() -> Markup {
     render_about().await
 }
 
+pub async fn generate_atom_feed(Extension(state): Extension<Arc<State>>) -> (StatusCode, String) {
+    (StatusCode::OK, state.generate_atom_feed().await)
+}
+
 pub async fn reload_posts(
     Extension(state): Extension<Arc<State>>,
     Json(payload): Json<AdminToken>,

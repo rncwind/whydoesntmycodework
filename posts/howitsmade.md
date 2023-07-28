@@ -1,7 +1,6 @@
 ---
 title: Building a Blog
 slug: buildingablog
-started: 2023-04-16
 published: 2023-07-05
 tags: [rust, axum, blog-meta]
 ---

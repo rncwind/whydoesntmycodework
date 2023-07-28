@@ -1,3 +1,4 @@
+use chrono::{NaiveDate, NaiveDateTime};
 use std::cmp::Ordering;
 use std::path::PathBuf;
 use tokio::sync::RwLock;
@@ -7,6 +8,8 @@ use comrak::{markdown_to_html_with_plugins, ComrakOptions, ComrakPlugins};
 use serde::Deserialize;
 use thiserror::Error;
 use tracing::*;
+
+const POST_BASE: &str = "https://whydoesntmycode.work/post/";
 
 #[derive(Debug)]
 pub struct SiteSettings {
@@ -82,6 +85,31 @@ impl Post {
             readtime,
         })
     }
+
+    fn get_full_url(&self) -> String {
+        format!("{}{}", POST_BASE, self.frontmatter.slug)
+    }
+
+    fn as_atom(&self) -> String {
+        format!(
+            "
+<entry>
+    <id>{}</id>
+    <title>{}</title>
+    <published>{}</published>
+    <updated>{}</updated>
+    <content type=\"html\" xml:base=\"{}\"><!CDATA[{}]> </content>
+    <link href=\"{}\" rel=\"alternate\" />
+</entry>",
+            self.get_full_url(),
+            self.frontmatter.title,
+            self.frontmatter.published,
+            self.frontmatter.updated.unwrap_or_default(),
+            self.get_full_url(),
+            self.rendered,
+            self.get_full_url()
+        )
+    }
 }
 
 impl PartialOrd for Post {
@@ -94,8 +122,8 @@ impl PartialOrd for Post {
 pub struct FrontMatter {
     pub title: String,
     pub slug: String,
-    pub started: chrono::NaiveDate,
     pub published: chrono::NaiveDate,
+    pub updated: Option<chrono::NaiveDate>,
     pub tags: Vec<String>,
 }
 
@@ -125,6 +153,7 @@ impl FrontMatter {
 pub struct State {
     pub posts: RwLock<Vec<Post>>,
     pub admin_token: String,
+    pub atom_feed: Option<String>,
     posts_path: PathBuf,
 }
 
@@ -152,7 +181,16 @@ impl State {
             let content = std::fs::read_to_string(validpath).unwrap();
             let post = Post::new(content, comrak_opts, comrak_plugins);
             match post {
-                Ok(post) => v.push(post),
+                Ok(post) => {
+                    if post.frontmatter.published <= chrono::Utc::now().date_naive() {
+                        v.push(post)
+                    } else {
+                        info!(
+                            "Post {} isn't due to be published yet. Skipping",
+                            post.frontmatter.title
+                        );
+                    }
+                }
                 Err(e) => {
                     warn!("{:?} on file {:?}, SKIPPING", e, filename);
                     continue;
@@ -177,6 +215,7 @@ impl State {
         Self {
             posts: RwLock::new(posts),
             posts_path: settings.posts_path,
+            atom_feed: None,
             admin_token,
         }
     }
@@ -191,5 +230,33 @@ impl State {
             State::get_posts(Some(self.posts_path.clone()), &comrak_opts, &comrak_plugins);
         posts.sort_by(|a, b| b.frontmatter.published.cmp(&a.frontmatter.published));
         posts
+    }
+
+    pub async fn generate_atom_feed(&self) -> String {
+        //let rss_entries: Vec<String> = Vec::new();
+        let atom_header = "
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns=\"http://www.w3.org/2005/Atom\">
+    <id>https://whydoesntmycode.work/blog.atom</id>
+    <title>Why Doesn't My Code Work?</title>
+    <author>
+        <name>Freyja</name>
+        <email>rncwnd@whydoesntmycode.work</email>
+    </author>
+    <link href=\"https://whydoesntmycode.work/blog.atom\" rel=\"self\" />
+    <generator https://whydoesntmycode.work version=\"3.0.0\"/>
+";
+        let mut feed = format!("{}", atom_header);
+        let rss_entries: Vec<String> = self
+            .posts
+            .read()
+            .await
+            .iter()
+            .map(|x| x.as_atom())
+            .collect();
+        for entry in rss_entries {
+            feed = format!("{}{}", feed, entry)
+        }
+        format!("{}\n</feed>", feed)
     }
 }
