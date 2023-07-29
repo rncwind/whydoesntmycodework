@@ -1,7 +1,7 @@
 use crate::tmpl::{render_about, render_blogpost, render_home, render_postlist};
 use crate::types::State;
 use axum::Json;
-use axum::{extract::Path, http::StatusCode, Extension};
+use axum::{extract::Path, headers::ContentType, http::StatusCode, Extension, TypedHeader};
 use maud::{html, Markup};
 use serde::Deserialize;
 use std::sync::Arc;
@@ -39,8 +39,17 @@ pub async fn about() -> Markup {
     render_about().await
 }
 
-pub async fn generate_atom_feed(Extension(state): Extension<Arc<State>>) -> (StatusCode, String) {
-    (StatusCode::OK, state.generate_atom_feed().await)
+// pub async fn generate_atom_feed(Extension(state): Extension<Arc<State>>) -> (StatusCode, String) {
+//     (StatusCode::OK, state.generate_atom_feed().await)
+// }
+
+pub async fn generate_atom_feed(
+    Extension(state): Extension<Arc<State>>,
+) -> (TypedHeader<ContentType>, String) {
+    (
+        TypedHeader(ContentType::xml()),
+        state.generate_atom_feed().await,
+    )
 }
 
 pub async fn reload_posts(
