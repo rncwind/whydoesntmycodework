@@ -1,4 +1,4 @@
-use crate::tmpl::{render_about, render_blogpost, render_home, render_postlist};
+use crate::tmpl::{render_about, render_blogpost, render_feeds, render_home, render_postlist};
 use crate::types::State;
 use axum::Json;
 use axum::{extract::Path, headers::ContentType, http::StatusCode, Extension, TypedHeader};
@@ -39,16 +39,12 @@ pub async fn about() -> Markup {
     render_about().await
 }
 
-// pub async fn generate_atom_feed(Extension(state): Extension<Arc<State>>) -> (StatusCode, String) {
-//     (StatusCode::OK, state.generate_atom_feed().await)
-// }
-
 pub async fn generate_atom_feed(
     Extension(state): Extension<Arc<State>>,
 ) -> (TypedHeader<ContentType>, String) {
     (
         TypedHeader(ContentType::xml()),
-        state.generate_atom_feed().await,
+        (*state.atom_feed.read().await).to_string(),
     )
 }
 
@@ -59,8 +55,14 @@ pub async fn reload_posts(
     if payload.admin_token == state.admin_token {
         let newposts = state.generate_posts();
         *state.posts.write().await = newposts;
+        let new_feed = state.generate_atom_feed().await;
+        *state.atom_feed.write().await = new_feed;
         (StatusCode::OK, html! {"Refreshed!"})
     } else {
         (StatusCode::FORBIDDEN, html! {"Bugger off!"})
     }
+}
+
+pub async fn feeds() -> Markup {
+    render_feeds().await
 }

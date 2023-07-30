@@ -80,6 +80,7 @@ async fn main() {
         .route("/blog", get(handlers::list_posts))
         .route("/about", get(handlers::about))
         .route("/post/:slug", get(handlers::blogpost))
+        .route("/feeds", get(handlers::feeds))
         .route("/feeds/atom.xml", get(handlers::generate_atom_feed))
         .route("/api/admin/reload", post(handlers::reload_posts))
         .nest_service("/static", staticfiles)

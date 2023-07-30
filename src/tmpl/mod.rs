@@ -126,3 +126,12 @@ pub async fn render_about() -> Markup {
     };
     base(Some("About Me"), content)
 }
+
+pub async fn render_feeds() -> Markup {
+    html! {
+        h1{"Feeds"}
+        ul {
+            li{a href="https://whydoesntmycode.work/feeds/atom.xml" {"Atom" }};
+        }
+    }
+}

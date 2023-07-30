@@ -153,7 +153,7 @@ impl FrontMatter {
 pub struct State {
     pub posts: RwLock<Vec<Post>>,
     pub admin_token: String,
-    pub atom_feed: Option<String>,
+    pub atom_feed: RwLock<String>,
     posts_path: PathBuf,
 }
 
@@ -212,10 +212,11 @@ impl State {
             &comrak_plugins,
         );
         posts.sort_by(|a, b| b.frontmatter.published.cmp(&a.frontmatter.published));
+        let atom_feed = Self::initialize_atom_feed(posts.clone());
         Self {
             posts: RwLock::new(posts),
             posts_path: settings.posts_path,
-            atom_feed: None,
+            atom_feed: RwLock::new(atom_feed),
             admin_token,
         }
     }
@@ -252,6 +253,29 @@ impl State {
             .iter()
             .map(|x| x.as_atom())
             .collect();
+        for entry in rss_entries {
+            feed = format!("{}{}", feed, entry)
+        }
+        format!("{}\n</feed>", feed)
+    }
+
+    /// This creates the initial atom feed.
+    /// Given a vec of posts it creates the atom feed based on what files
+    /// were on the disk at startup.
+    pub fn initialize_atom_feed(posts: Vec<Post>) -> String {
+        //let rss_entries: Vec<String> = Vec::new();
+        let atom_header = "<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns=\"http://www.w3.org/2005/Atom\">
+    <id>https://whydoesntmycode.work/blog.atom</id>
+    <title>Why Doesn't My Code Work?</title>
+    <author>
+        <name>Freyja</name>
+        <email>rncwnd@whydoesntmycode.work</email>
+    </author>
+    <link href=\"https://whydoesntmycode.work/blog.atom\" rel=\"self\" />
+    <generator uri=\"https://whydoesntmycode.work\" version=\"3.0.0\">whydoesntmycode.work</generator>";
+        let mut feed = format!("{}", atom_header);
+        let rss_entries: Vec<String> = posts.iter().map(|x| x.as_atom()).collect();
         for entry in rss_entries {
             feed = format!("{}{}", feed, entry)
         }
