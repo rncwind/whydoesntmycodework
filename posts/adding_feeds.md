@@ -21,6 +21,8 @@ Or rather, on a technical level I do like XML. It has advantages over other
 formats such as JSON due to it's tag system; however that same tag system is
 what makes it complex to parse, reason about and annoying to write.
 
+The Atom feed should now be available [Here](whydoesntmycode.work/feeds/atom.xml)
+
 ## RSS, Atom and JSONFeed Oh My!
 When deciding to implement feeds on this blog, I stood at a crossroads. There
 are 3 feed formats in common usage on the web, of which two are well supported
