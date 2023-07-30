@@ -1,7 +1,9 @@
 use crate::tmpl::{render_about, render_blogpost, render_feeds, render_home, render_postlist};
 use crate::types::State;
+use axum::response::IntoResponse;
 use axum::Json;
 use axum::{extract::Path, headers::ContentType, http::StatusCode, Extension, TypedHeader};
+use hyper::HeaderMap;
 use maud::{html, Markup};
 use serde::Deserialize;
 use std::sync::Arc;
@@ -39,14 +41,21 @@ pub async fn about() -> Markup {
     render_about().await
 }
 
-pub async fn generate_atom_feed(
-    Extension(state): Extension<Arc<State>>,
-) -> (TypedHeader<ContentType>, String) {
-    (
-        TypedHeader(ContentType::xml()),
-        (*state.atom_feed.read().await).to_string(),
-    )
+pub async fn generate_atom_feed(Extension(state): Extension<Arc<State>>) -> impl IntoResponse {
+    let mut headers = HeaderMap::new();
+    // Atom has it's own MIME type, we should use it.
+    headers.insert("content-type", "application/atom+xml".parse().unwrap());
+    (headers, (*state.atom_feed.read().await).to_string())
 }
+
+// pub async fn generate_atom_feed(
+//     Extension(state): Extension<Arc<State>>,
+// ) -> (TypedHeader<ContentType>, String) {
+//     (
+//         TypedHeader(ContentType::xml()),
+//         (*state.atom_feed.read().await).to_string(),
+//     )
+// }
 
 pub async fn reload_posts(
     Extension(state): Extension<Arc<State>>,
