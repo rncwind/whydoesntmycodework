@@ -11,14 +11,16 @@ use std::{net::SocketAddr, sync::Arc};
 use axum::{
     extract::Host,
     handler::HandlerWithoutStateExt,
+    http::header::{self, HeaderValue},
     http::{StatusCode, Uri},
     response::Redirect,
     routing::{get, post},
-    BoxError, Extension, Router,
+    BoxError, Extension, Router, ServiceExt,
 };
 use std::io::Write;
 use tokio::net::UnixListener;
 use tower_http::services::ServeDir;
+use tower_http::set_header::SetResponseHeaderLayer;
 use tracing::*;
 use types::*;
 
@@ -74,6 +76,21 @@ async fn main() {
     info!("Setting up static file service");
     let staticfiles = ServeDir::new("static");
 
+    let middleware = tower::ServiceBuilder::new()
+        .layer(SetResponseHeaderLayer::appending(
+            header::HeaderName::from_static("X-Clacks-Overhead"),
+            Some(header::HeaderValue::from_static(
+                "GNU Terry Pratchett, Akira Complex, Natalie Nguyen",
+            )),
+        ))
+        .layer(SetResponseHeaderLayer::appending(
+            header::HeaderName::from_static("X-Powered-By"),
+            Some(header::HeaderValue::from_static(
+                "Coffee, Estradiol, Anger and Rust",
+            )),
+        ))
+        .layer(Extension(state));
+
     info!("Creating router");
     let app = Router::new()
         .route("/", get(handlers::home))
@@ -84,7 +101,7 @@ async fn main() {
         .route("/feeds/atom.xml", get(handlers::generate_atom_feed))
         .route("/api/admin/reload", post(handlers::reload_posts))
         .nest_service("/static", staticfiles)
-        .layer(Extension(state))
+        .layer(middleware)
         .fallback(handlers::handle_404);
 
     match std::env::var("SOCKET_PATH") {

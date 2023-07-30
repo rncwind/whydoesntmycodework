@@ -48,15 +48,6 @@ pub async fn generate_atom_feed(Extension(state): Extension<Arc<State>>) -> impl
     (headers, (*state.atom_feed.read().await).to_string())
 }
 
-// pub async fn generate_atom_feed(
-//     Extension(state): Extension<Arc<State>>,
-// ) -> (TypedHeader<ContentType>, String) {
-//     (
-//         TypedHeader(ContentType::xml()),
-//         (*state.atom_feed.read().await).to_string(),
-//     )
-// }
-
 pub async fn reload_posts(
     Extension(state): Extension<Arc<State>>,
     Json(payload): Json<AdminToken>,

@@ -35,6 +35,8 @@ fn navbar() -> Markup {
             a href = ("/blog") {"Blog"}
             " - "
             a href = ("/about") {"About Me"}
+            " - "
+            a href = ("/feeds") {"Feeds"}
         }
     }
 }
@@ -128,10 +130,11 @@ pub async fn render_about() -> Markup {
 }
 
 pub async fn render_feeds() -> Markup {
-    html! {
+    let content = html! {
         h1{"Feeds"}
         ul {
             li{a href="https://whydoesntmycode.work/feeds/atom.xml" {"Atom" }};
         }
-    }
+    };
+    base(Some("Feeds"), content)
 }
