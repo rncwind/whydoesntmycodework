@@ -10,6 +10,16 @@ use thiserror::Error;
 use tracing::*;
 
 const POST_BASE: &str = "https://whydoesntmycode.work/post/";
+const ATOM_HEADER: &str = "<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns=\"http://www.w3.org/2005/Atom\">
+<id>https://whydoesntmycode.work/blog.atom</id>
+<title>Why Doesn't My Code Work?</title>
+<author>
+    <name>Freyja</name>
+    <email>rncwnd@whydoesntmycode.work</email>
+</author>
+<link href=\"https://whydoesntmycode.work/blog.atom\" rel=\"self\" />
+<generator uri=\"https://whydoesntmycode.work\" version=\"1.3.1.2\">whydoesntmycode.work</generator>";
 
 #[derive(Debug)]
 pub struct SiteSettings {
@@ -235,17 +245,7 @@ impl State {
 
     pub async fn generate_atom_feed(&self) -> String {
         //let rss_entries: Vec<String> = Vec::new();
-        let atom_header = "<?xml version='1.0' encoding='UTF-8'?>
-<feed xmlns=\"http://www.w3.org/2005/Atom\">
-    <id>https://whydoesntmycode.work/blog.atom</id>
-    <title>Why Doesn't My Code Work?</title>
-    <author>
-        <name>Freyja</name>
-        <email>rncwnd@whydoesntmycode.work</email>
-    </author>
-    <link href=\"https://whydoesntmycode.work/blog.atom\" rel=\"self\" />
-    <generator uri=\"https://whydoesntmycode.work\" version=\"3.0.0\">whydoesntmycode.work</generator>";
-        let mut feed = format!("{}", atom_header);
+        let mut feed = format!("{}", ATOM_HEADER);
         let rss_entries: Vec<String> = self
             .posts
             .read()
@@ -264,17 +264,7 @@ impl State {
     /// were on the disk at startup.
     pub fn initialize_atom_feed(posts: Vec<Post>) -> String {
         //let rss_entries: Vec<String> = Vec::new();
-        let atom_header = "<?xml version='1.0' encoding='UTF-8'?>
-<feed xmlns=\"http://www.w3.org/2005/Atom\">
-    <id>https://whydoesntmycode.work/blog.atom</id>
-    <title>Why Doesn't My Code Work?</title>
-    <author>
-        <name>Freyja</name>
-        <email>rncwnd@whydoesntmycode.work</email>
-    </author>
-    <link href=\"https://whydoesntmycode.work/blog.atom\" rel=\"self\" />
-    <generator uri=\"https://whydoesntmycode.work\" version=\"3.0.0\">whydoesntmycode.work</generator>";
-        let mut feed = format!("{}", atom_header);
+        let mut feed = format!("{}", ATOM_HEADER);
         let rss_entries: Vec<String> = posts.iter().map(|x| x.as_atom()).collect();
         for entry in rss_entries {
             feed = format!("{}{}", feed, entry)
