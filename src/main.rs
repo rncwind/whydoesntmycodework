@@ -78,13 +78,13 @@ async fn main() {
 
     let middleware = tower::ServiceBuilder::new()
         .layer(SetResponseHeaderLayer::appending(
-            header::HeaderName::from_static("X-Clacks-Overhead"),
+            header::HeaderName::from_static("x-clacks-overhead"),
             Some(header::HeaderValue::from_static(
                 "GNU Terry Pratchett, Akira Complex, Natalie Nguyen",
             )),
         ))
         .layer(SetResponseHeaderLayer::appending(
-            header::HeaderName::from_static("X-Powered-By"),
+            header::HeaderName::from_static("x-powered-by"),
             Some(header::HeaderValue::from_static(
                 "Coffee, Estradiol, Anger and Rust",
             )),
