@@ -80,7 +80,7 @@ async fn main() {
         .layer(SetResponseHeaderLayer::appending(
             header::HeaderName::from_static("x-clacks-overhead"),
             Some(header::HeaderValue::from_static(
-                "GNU Terry Pratchett, Akira Complex, Natalie Nguyen",
+                "GNU Terry Pratchett, Akira Complex, Natalie Nguyen, Brianna Ghey",
             )),
         ))
         .layer(SetResponseHeaderLayer::appending(
