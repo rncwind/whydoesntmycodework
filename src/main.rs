@@ -103,7 +103,7 @@ async fn main() {
         .route("/feeds", get(handlers::feeds))
         .route("/feeds/atom.xml", get(handlers::generate_atom_feed))
         .route("/api/admin/reload", post(handlers::reload_posts))
-        .route("/stats", get(stats))
+        .route("/metrics", get(metrics))
         .nest_service("/static", staticfiles)
         .layer(middleware)
         .fallback(handlers::handle_404);
@@ -140,7 +140,7 @@ async fn main() {
     }
 }
 
-async fn stats() -> Response {
+async fn metrics() -> Response {
     let encoder = TextEncoder::new();
     let metric_families = prometheus::gather();
     let mut buffer = Vec::new();
