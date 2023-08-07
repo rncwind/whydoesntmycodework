@@ -3,6 +3,8 @@ mod handlers;
 mod tmpl;
 mod types;
 
+use axum::body;
+use prometheus::{Encoder, TextEncoder};
 use rand::{distributions::Alphanumeric, Rng};
 use std::fs::File;
 use std::os::unix::fs::PermissionsExt;
@@ -11,9 +13,10 @@ use std::{net::SocketAddr, sync::Arc};
 use axum::{
     extract::Host,
     handler::HandlerWithoutStateExt,
-    http::header::{self, HeaderValue},
+    http::header::{self, HeaderValue, CONTENT_TYPE},
     http::{StatusCode, Uri},
     response::Redirect,
+    response::Response,
     routing::{get, post},
     BoxError, Extension, Router, ServiceExt,
 };
@@ -100,6 +103,7 @@ async fn main() {
         .route("/feeds", get(handlers::feeds))
         .route("/feeds/atom.xml", get(handlers::generate_atom_feed))
         .route("/api/admin/reload", post(handlers::reload_posts))
+        .route("/stats", get(stats))
         .nest_service("/static", staticfiles)
         .layer(middleware)
         .fallback(handlers::handle_404);
@@ -134,4 +138,16 @@ async fn main() {
                 .unwrap()
         }
     }
+}
+
+async fn stats() -> Response {
+    let encoder = TextEncoder::new();
+    let metric_families = prometheus::gather();
+    let mut buffer = Vec::new();
+    encoder.encode(&metric_families, &mut buffer).unwrap();
+    Response::builder()
+        .status(200)
+        .header(CONTENT_TYPE, encoder.format_type())
+        .body(body::boxed(body::Full::from(buffer)))
+        .unwrap()
 }

@@ -12,7 +12,9 @@ comrak = "0.18.0"
 estimated_read_time = "1.0.0"
 futures = "0.3.28"
 hyper = "0.14.26"
+lazy_static = "1.4.0"
 maud = { version = "*", features = ["axum"] }
+prometheus = "0.13.3"
 rand = "0.8.5"
 ructe = "0.17.0"
 serde = { version = "1.0.160", features = ["derive"] }

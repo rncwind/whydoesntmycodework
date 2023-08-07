@@ -109,7 +109,7 @@ Similarly, fans of discworld adopted this message, and added this non-standard
 header to their webpages in order to memorialise, and immortalize people who
 tragically have passed.
 
-This website now also sends a X-Clacks-Overhead message of it's own. This will
+This website now also sends a X-Clacks-Overhead message of it's own. This will (sadly)
 likely evolve over time.
 
 ## While writing this
