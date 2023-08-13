@@ -4,6 +4,7 @@ mod tmpl;
 mod types;
 
 use axum::body;
+use axum::routing::get_service;
 use prometheus::{Encoder, TextEncoder};
 use rand::{distributions::Alphanumeric, Rng};
 use std::fs::File;
@@ -22,7 +23,7 @@ use axum::{
 };
 use std::io::Write;
 use tokio::net::UnixListener;
-use tower_http::services::ServeDir;
+use tower_http::services::{ServeDir, ServeFile};
 use tower_http::set_header::SetResponseHeaderLayer;
 use tracing::*;
 use types::*;
@@ -83,7 +84,7 @@ async fn main() {
         .layer(SetResponseHeaderLayer::appending(
             header::HeaderName::from_static("x-clacks-overhead"),
             Some(header::HeaderValue::from_static(
-                "GNU Terry Pratchett, Akira Complex, Natalie Nguyen, Brianna Ghey",
+                "GNU Terry Pratchett, Akira Complex, Natalie Nguyen, Brianna Ghey, SHIKI",
             )),
         ))
         .layer(SetResponseHeaderLayer::appending(
@@ -104,6 +105,10 @@ async fn main() {
         .route("/feeds/atom.xml", get(handlers::generate_atom_feed))
         .route("/api/admin/reload", post(handlers::reload_posts))
         .route("/metrics", get(metrics))
+        .route(
+            "/robots.txt",
+            get_service(ServeFile::new("./static/robots.txt")),
+        )
         .nest_service("/static", staticfiles)
         .layer(middleware)
         .fallback(handlers::handle_404);
