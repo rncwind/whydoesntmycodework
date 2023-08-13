@@ -109,6 +109,10 @@ async fn main() {
             "/robots.txt",
             get_service(ServeFile::new("./static/robots.txt")),
         )
+        .route(
+            "/favicon.ico",
+            get_service(ServeFile::new("./static/assets/favicon.ico")),
+        )
         .nest_service("/static", staticfiles)
         .layer(middleware)
         .fallback(handlers::handle_404);
