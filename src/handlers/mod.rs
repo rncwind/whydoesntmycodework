@@ -48,6 +48,13 @@ pub async fn blogpost(
     handle_404().await
 }
 
+pub async fn tag(
+    Path(tagname): Path<String>,
+    Extension(state): Extension<Arc<State>>,
+) -> (StatusCode, Markup) {
+    todo!()
+}
+
 pub async fn home() -> Markup {
     PAGE_HIT_COUNTER.with_label_values(&["home"]).inc();
     render_home().await

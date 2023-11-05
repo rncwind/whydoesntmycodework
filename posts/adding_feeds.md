@@ -4,6 +4,7 @@ slug: addingfeeds
 started: 2023-07-28
 published: 2038-01-19
 tags: [blog-meta, rust, xml, rss, atom]
+public: false
 ---
 
 # Feeding the hand that bites
@@ -42,7 +43,7 @@ make their own feeds.
 
 I have made the conscious decision to not support RSS, and instead support Atom.
 The only feed reader that I am aware of which does not support Atom out of the
-box is Emacs' Gnus (It can however use ¬`nnatom`¬ with a little bit of elisp).
+box is Emacs' Gnus (It can however use `nnatom` with a little bit of elisp).
 Because of this, there is almost zero incentive for me to duplicate work and
 support a older, worse format.
 

@@ -46,9 +46,22 @@
             '';
           };
 
+          posts = pkgs.stdenv.mkDerivation {
+            pname = "whydoesntmycodework-posts";
+            inherit (bin) version;
+            inherit src;
+
+            phases = "installPhase";
+
+            installPhase = ''
+              mkdir $out
+              cp -r $src/posts $out
+            '';
+          };
+
           default = pkgs.symlinkJoin {
             name = "whydoesntmycodework-${bin.version}";
-            paths = [ static bin ];
+            paths = [ static bin posts ];
           };
         };
 

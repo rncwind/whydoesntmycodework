@@ -3,6 +3,7 @@ title: Why small computers are awesome
 slug: smallcomputers
 published: 2023-08-14
 tags: [nix, Raspberry Pi, rpi, homelab, nixos]
+public: true
 ---
 
 One of my earliest experiences using a Linux-based computer, at my desktop was
@@ -163,7 +164,7 @@ the ability to write your own DNS resolutions. Previously, I was using the
 _telneting_ in, and adjusting the ``dnsmasq`` config.
 
 This was obviously a horrible user experience. Partly because the only reason to
- use telnet when SSH exists is to [watch Star Wars](towel.blinkenlights.nl), but
+ use telnet when SSH exists is to [watch Star Wars](http://towel.blinkenlights.nl), but
  also partly because it involved manually editing a text file, over telnet, on
  my router, and then restarting the device (Because you can't restart ``dnsmasq``
  from the telnet session!).

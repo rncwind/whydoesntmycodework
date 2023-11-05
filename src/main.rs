@@ -60,22 +60,17 @@ fn create_admin_token() -> String {
 async fn main() {
     tracing_subscriber::fmt::init();
 
-    info!("Getting host info from Dhall config");
-    let host: HostSettings = serde_dhall::from_file("./host.dhall").parse().unwrap();
-    info!(
-        "Will set up host on {} ({})",
-        host.hostname,
-        host.host_string()
-    );
-
     info!("Getting site settings");
     let ss = SiteSettings::default();
 
     info!("Generating new admin token");
     let admin_token = create_admin_token();
 
+    info!("Checking if we want to debug or not");
+    let dbg_mode = std::env::var("SOCKET_PATH").is_err();
+
     info!("Init state");
-    let state: Arc<State> = Arc::new(State::new(ss, admin_token));
+    let state: Arc<State> = Arc::new(State::new(ss, admin_token, dbg_mode));
 
     info!("Setting up static file service");
     let staticfiles = ServeDir::new("static");
@@ -140,6 +135,15 @@ async fn main() {
             // Dev case!
             warn!("Couldn't get a unix socket, trying to serve normally. Are we on dev?");
             warn!("Error was: {}", e);
+
+            info!("Getting host info from Dhall config");
+            let host: HostSettings = serde_dhall::from_file("./host.dhall").parse().unwrap();
+            info!(
+                "Will set up host on {} ({})",
+                host.hostname,
+                host.host_string()
+            );
+
             let addr: SocketAddr = host.host_string().parse().unwrap();
             axum::Server::bind(&addr)
                 .serve(app.into_make_service())

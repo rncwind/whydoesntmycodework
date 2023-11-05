@@ -3,6 +3,7 @@ title: Building a Blog
 slug: buildingablog
 published: 2023-07-05
 tags: [rust, axum, blog-meta]
+public: true
 ---
 
 I read a _lot_ of technical blogs. I love reading about how people make

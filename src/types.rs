@@ -29,7 +29,7 @@ pub struct SiteSettings {
 impl Default for SiteSettings {
     fn default() -> Self {
         Self {
-            posts_path: "./posts/".parse().unwrap(),
+            posts_path: "./posts".parse().unwrap(),
         }
     }
 }
@@ -135,6 +135,7 @@ pub struct FrontMatter {
     pub published: chrono::NaiveDate,
     pub updated: Option<chrono::NaiveDate>,
     pub tags: Vec<String>,
+    pub public: bool,
 }
 
 impl FrontMatter {
@@ -148,7 +149,6 @@ impl FrontMatter {
             let start = (matches[0].0) + 3; // Skip over the first 3 ---
             let end = matches[1].0;
             let slice = &content[start..end].to_string();
-            info!("{}", slice);
             match serde_yaml::from_str(slice) {
                 Ok(x) => Ok(x),
                 Err(e) => {
@@ -164,6 +164,7 @@ pub struct State {
     pub posts: RwLock<Vec<Post>>,
     pub admin_token: String,
     pub atom_feed: RwLock<String>,
+    pub debug_mode: bool,
     posts_path: PathBuf,
 }
 
@@ -172,9 +173,11 @@ impl State {
         post_dir: Option<PathBuf>,
         comrak_opts: &ComrakOptions,
         comrak_plugins: &ComrakPlugins,
+        debug_mode: bool,
     ) -> Vec<Post> {
         let mut v: Vec<Post> = Vec::new();
-        let p: PathBuf = post_dir.unwrap_or("./posts/".parse().unwrap());
+        let p: PathBuf = post_dir.unwrap_or("./posts".parse().unwrap());
+        trace!("Loading posts from {:?}", p);
         let post_paths = std::fs::read_dir(p).unwrap();
         for path in post_paths {
             let validpath = match path {
@@ -187,30 +190,32 @@ impl State {
 
             // Now we have a valid file path that we can read the markdown from.
             let filename = String::from(validpath.file_stem().unwrap().to_str().unwrap());
-            println!("{:?}", validpath);
+            trace!("Loading post from {:?}", filename);
             let content = std::fs::read_to_string(validpath).unwrap();
             let post = Post::new(content, comrak_opts, comrak_plugins);
             match post {
                 Ok(post) => {
-                    if post.frontmatter.published <= chrono::Utc::now().date_naive() {
+                    if debug_mode {
                         v.push(post)
                     } else {
-                        info!(
-                            "Post {} isn't due to be published yet. Skipping",
-                            post.frontmatter.title
-                        );
+                        if post.frontmatter.public && post.frontmatter.published <= chrono::Utc::now().date_naive() {
+                            v.push(post)
+                        } else {
+                            info!("Post \"{}\" is either not due to be published, or not set to public Skipping.", post.frontmatter.title);
+                        }
                     }
                 }
                 Err(e) => {
-                    warn!("{:?} on file {:?}, SKIPPING", e, filename);
+                    warn!("error {:?} on file {:?}, SKIPPING", e, filename);
                     continue;
                 }
             }
         }
+        info!("Loaded {} posts", v.len());
         v
     }
 
-    pub fn new(settings: SiteSettings, admin_token: String) -> Self {
+    pub fn new(settings: SiteSettings, admin_token: String, debug: bool) -> Self {
         let adapter = SyntectAdapter::new("base16-eighties.dark");
         let mut comrak_opts = ComrakOptions::default();
         comrak_opts.extension.front_matter_delimiter = Some("---".to_owned());
@@ -220,6 +225,7 @@ impl State {
             Some(settings.posts_path.clone()),
             &comrak_opts,
             &comrak_plugins,
+            debug,
         );
         posts.sort_by(|a, b| b.frontmatter.published.cmp(&a.frontmatter.published));
         let atom_feed = Self::initialize_atom_feed(posts.clone());
@@ -228,6 +234,7 @@ impl State {
             posts_path: settings.posts_path,
             atom_feed: RwLock::new(atom_feed),
             admin_token,
+            debug_mode: debug
         }
     }
 
@@ -238,7 +245,7 @@ impl State {
         let mut comrak_plugins = ComrakPlugins::default();
         comrak_plugins.render.codefence_syntax_highlighter = Some(&adapter);
         let mut posts =
-            State::get_posts(Some(self.posts_path.clone()), &comrak_opts, &comrak_plugins);
+            State::get_posts(Some(self.posts_path.clone()), &comrak_opts, &comrak_plugins, self.debug_mode);
         posts.sort_by(|a, b| b.frontmatter.published.cmp(&a.frontmatter.published));
         posts
     }
