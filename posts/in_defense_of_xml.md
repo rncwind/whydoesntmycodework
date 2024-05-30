@@ -3,7 +3,7 @@ title: In Defense of XML
 slug: indefenseofxml
 published: 2030-05-30
 tags: [xml, json, markups, schemas]
-public: false
+public: true
 ---
 
 # In Defense of XML
@@ -110,7 +110,7 @@ sequence of tags, and finally a stringy boolean for if the post is public or not
 ```
 
 One very interesting aspect of XML schemas, which is rather "love it or hate
-it", is the fact taht the **ordering of elelements is constrained by the schema**.
+it", is the fact that the **ordering of elements is constrained by the schema**.
 This means that the document *must* follow the order of fields defined in the
 schema, or else it will not pass validation!
 
@@ -146,8 +146,24 @@ JSON data I send will not be mangled by conversion steps.
 ## Schemas are very powerful
 
 I've touched on only the most basic aspects of XML schemas, they are incredibly
-powerful and versitile, able to place aribtrary constraints on data and grammar.
+powerful and versatile, able to place arbitrary constraints on data and grammar.
 
 There are tools to add schemas to other languages like JSON, but these were
 added post-hoc and as such are nowhere near as closely tied to the language as
 they are with XML.
+
+## But what about REST?!
+
+A lot of the time when I bring up my love for JSON, there's a (understandable)
+knee jerk reaction whereby people think I'm advocating for SOAP instead of REST.
+This is unequivocally not the case, as I rather dispose SOAP!
+
+REST was designed rather well, in that it does not specify the communications
+format. This means it's just as valid to write a REST API which returns XML
+instead of JSON, in fact as long as it's "machine readable" it's allowed!
+
+## Conclusion
+
+XML has a bad reputation, somewhat deservedly so. It _is_ verbose, it _is_ used
+a lot by Enterprise CRUD Apps, it _is_ complex, but hopefully this post will
+make you appreciate the _why_ of it instead!
