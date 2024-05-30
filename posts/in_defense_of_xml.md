@@ -1,7 +1,7 @@
 ---
 title: In Defense of XML
 slug: indefenseofxml
-published: 2030-05-30
+published: 2024-05-30
 tags: [xml, json, markups, schemas]
 public: true
 ---
