@@ -1,5 +1,5 @@
 use crate::types::{Post, State};
-use maud::{html, Markup, DOCTYPE};
+use maud::{html, Markup, DOCTYPE, PreEscaped};
 use std::sync::Arc;
 
 // Eventually everything reaches this. This is our base template.
@@ -8,6 +8,7 @@ use std::sync::Arc;
 fn base(title: Option<&str>, content: Markup) -> Markup {
     html! {
         (DOCTYPE)
+        (PreEscaped("<script defer data-domain=\"whydoesntmycode.work\" src=\"https://plausible.io/js/script.js\"></script>"))
         html lang = "en" {
             head {
                 meta charset="utf-8";
