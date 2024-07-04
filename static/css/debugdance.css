@@ -1,17 +1,17 @@
 :root {
-    --bg: #1C1E26;
+    --bg: #1c1e26;
     --fg: #b2b2c2;
-    --black: #2E303E;
-    --red: #E95678;
-    --ry-one: #EF7682;
-    --ry-two: #F4978B;
-    --yellow: #FAB795;
-    --green: #29D398;
-    --blue: #26BBD9;
-    --magenta: #EE64AE;
-    --magenta-alt: #CA93BA;
-    --cyan: #59E3E3;
-    --white: #FDF0ED;
+    --black: #2e303e;
+    --red: #e95678;
+    --ry-one: #ef7682;
+    --ry-two: #f4978b;
+    --yellow: #fab795;
+    --green: #29d398;
+    --blue: #26bbd9;
+    --magenta: #ee64ae;
+    --magenta-alt: #ca93ba;
+    --cyan: #59e3e3;
+    --white: #fdf0ed;
 }
 
 body {
@@ -22,12 +22,12 @@ body {
     max-width: 70%;
     background-color: var(--bg);
     color: var(--fg);
-    font-family: 'Fira Sans', sans-serif;
+    font-family: "Fira Sans", sans-serif;
     font-weight: 500;
 }
 
 code {
-    font-family: 'Fira Code', monospace;
+    font-family: "Fira Code", monospace;
 }
 
 .post-link {
@@ -36,6 +36,11 @@ code {
 
 .date {
     color: var(--white);
+}
+
+.taglist {
+    display: flex;
+    gap: 0.5vw;
 }
 
 a {
@@ -60,7 +65,8 @@ a:hover {
 h1 {
     color: var(--red);
     font-weight: 900;
-    margin-bottom: 5%;
+    margin-bottom: 3%;
+    margin-top: 3%;
     font-family: "fira-code", monospace;
 }
 
@@ -68,6 +74,7 @@ h2 {
     color: var(--ry-one);
     font-weight: 800;
     margin-bottom: 2.5%;
+    margin-top: 2.5%;
     font-family: "fira-code", monospace;
 }
 
@@ -75,9 +82,9 @@ h3 {
     color: var(--ry-two);
     font-weight: 700;
     margin-bottom: 1.5%;
+    margin-top: 1.5%;
     font-family: "fira-code", monospace;
 }
-
 
 pre {
     border-radius: 1%;
@@ -86,7 +93,7 @@ pre {
 }
 
 ul {
-    list-style-type: '- ';
+    list-style-type: "- ";
 }
 
 nav {

@@ -198,7 +198,9 @@ impl State {
                     if debug_mode {
                         v.push(post)
                     } else {
-                        if post.frontmatter.public && post.frontmatter.published <= chrono::Utc::now().date_naive() {
+                        if post.frontmatter.public
+                            && post.frontmatter.published <= chrono::Utc::now().date_naive()
+                        {
                             v.push(post)
                         } else {
                             info!("Post \"{}\" is either not due to be published, or not set to public Skipping.", post.frontmatter.title);
@@ -234,7 +236,7 @@ impl State {
             posts_path: settings.posts_path,
             atom_feed: RwLock::new(atom_feed),
             admin_token,
-            debug_mode: debug
+            debug_mode: debug,
         }
     }
 
@@ -244,8 +246,12 @@ impl State {
         comrak_opts.extension.front_matter_delimiter = Some("---".to_owned());
         let mut comrak_plugins = ComrakPlugins::default();
         comrak_plugins.render.codefence_syntax_highlighter = Some(&adapter);
-        let mut posts =
-            State::get_posts(Some(self.posts_path.clone()), &comrak_opts, &comrak_plugins, self.debug_mode);
+        let mut posts = State::get_posts(
+            Some(self.posts_path.clone()),
+            &comrak_opts,
+            &comrak_plugins,
+            self.debug_mode,
+        );
         posts.sort_by(|a, b| b.frontmatter.published.cmp(&a.frontmatter.published));
         posts
     }

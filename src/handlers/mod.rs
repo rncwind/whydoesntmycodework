@@ -1,4 +1,7 @@
-use crate::tmpl::{render_about, render_blogpost, render_feeds, render_home, render_postlist};
+use crate::tmpl::{
+    render_about, render_blogpost, render_feeds, render_home, render_postlist,
+    render_tagged_post_list,
+};
 use crate::types::State;
 
 use axum::response::IntoResponse;
@@ -52,7 +55,10 @@ pub async fn tag(
     Path(tagname): Path<String>,
     Extension(state): Extension<Arc<State>>,
 ) -> (StatusCode, Markup) {
-    todo!()
+    match render_tagged_post_list(state, tagname).await {
+        Ok(x) => (StatusCode::OK, x),
+        Err(x) => (StatusCode::BAD_REQUEST, x),
+    }
 }
 
 pub async fn home() -> Markup {
