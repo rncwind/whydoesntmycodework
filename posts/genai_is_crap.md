@@ -3,7 +3,7 @@ title: Machine Learning Isn't Magic
 slug: ml_isnt_magic
 published: 2024-07-07
 tags: [machine-learning, ai, philosophy]
-public: false
+public: true
 ---
 
 # Machine Learning Isn't Magic and LLMs are boring
