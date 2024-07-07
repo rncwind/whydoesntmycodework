@@ -221,6 +221,10 @@ impl State {
         let adapter = SyntectAdapter::new("base16-eighties.dark");
         let mut comrak_opts = ComrakOptions::default();
         comrak_opts.extension.front_matter_delimiter = Some("---".to_owned());
+        comrak_opts.extension.footnotes = true;
+        comrak_opts.extension.strikethrough = true;
+        comrak_opts.extension.table = true;
+        comrak_opts.extension.autolink = true;
         let mut comrak_plugins = ComrakPlugins::default();
         comrak_plugins.render.codefence_syntax_highlighter = Some(&adapter);
         let mut posts = State::get_posts(
